@@ -37,4 +37,4 @@
 4. Modify the `config/config.json` file to have correct credentials.
 5. Change directory `cd api`
 6. Collect Static Files `python manage.py collectstatic`
-7. This is the Final and the only step which needs to be repeated if running the server again after stopping it. Run server by `gunicorn api.wsgi:application`
+7. This is the Final and the only step which needs to be repeated if running the server again after stopping it. Run server by `python manage.py runserver`
