@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+{% endblock head %}
+
+{% block body %}
+  <!-- Popup Of API Working -->
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">APM API!</h4>
+    <p>The Server is running as expected.</p>
+    <hr>
+    <p class="mb-0"><a class=boldLink target=_blank href="https://github.com/Abled-Taha/apm-server">GITHUB LINK</a></p>
+  </div>
+{% endblock body %}
