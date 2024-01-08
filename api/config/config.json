@@ -1,0 +1,7 @@
+{
+  "hostDB":"localhost",
+  "portDB":"27017",
+  "nameDB":"apm",
+  "username":"apm",
+  "pwd":"apmuserpass"
+}
