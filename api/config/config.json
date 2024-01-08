@@ -1,4 +1,7 @@
 {
+  "debug":true,
+  "secretKey":"django-insecure-i&5ia(st50%1#r^wju7bx0)w-b-_2v0%gsj#&_71+z_x8lkfvy",
+  
   "hostDB":"localhost",
   "portDB":"27017",
   "nameDB":"apm",
