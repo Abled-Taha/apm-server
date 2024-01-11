@@ -48,6 +48,7 @@ def createUser(email, username, password, rePassword):
       colUsers.insert_one({'email':email, 'username':username, 'salt':salt, 'passwordHash':passwordHash})
     except Exception as e:
       error = e
+      return(isValid, error)
     error = "Account Created!"
   
   return(isValid, error)
