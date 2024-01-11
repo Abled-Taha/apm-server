@@ -7,8 +7,14 @@
 {% endblock head %}
 
 {% block body %}
-  <div class="form">
-    {% if submitted == False %}
+  {% if submitted == False %}
+    <style>
+      body {
+        margin: auto;
+      }
+    </style>
+
+    <div class="form">
       <form action = "{% url 'signup' %}" method = "POST">
         {% csrf_token %}
         {% comment %} {{ form }} {% endcomment %}
@@ -25,14 +31,33 @@
         <br>
         <input type="submit" value="SignUp">
       </form>
-    {% elif submitted == True and isValid == True %}
-      <h4>Account Created</h4>
-    {% elif submitted == True and isValid == False %}
-      <h4>{{ error }}</h4>
-    {% else %}
-      <p>Error</p>
-    {% endif %}
 
-    <script src="{% static 'js/signup.js' %}"></script>
-  </div>
+      <script src="{% static 'js/signup.js' %}"></script>
+    </div>
+
+  {% elif submitted == True and isValid == True %}
+    <div class="alert alert-success" role="alert">
+      <h4 class="alert-heading">Success</h4>
+      <p>{{ error }}</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'signup' %}">Go Back</a></p>
+    </div>
+
+  {% elif submitted == True and isValid == False %}
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error</h4>
+      <p>{{ error }}</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'signup' %}">Go Back</a></p>
+    </div>
+
+  {% else %}
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error</h4>
+      <p>Unknown error, something went wrong.</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'signup' %}">Go Back</a></p>
+    </div>
+    
+  {% endif %}
 {% endblock body %}

@@ -44,6 +44,10 @@ def createUser(email, username, password, rePassword):
   passwordHash = swiftcrypt.Hash().hash_password(password, salt, "sha256")
   
   if isValid:
-    colUsers.insert_one({'email':email, 'username':username, 'salt':salt, 'passwordHash':passwordHash})
+    try:
+      colUsers.insert_one({'email':email, 'username':username, 'salt':salt, 'passwordHash':passwordHash})
+    except Exception as e:
+      error = e
+    error = "Account Created!"
   
   return(isValid, error)

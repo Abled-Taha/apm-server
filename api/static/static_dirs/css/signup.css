@@ -6,7 +6,6 @@ html {
 body {
   background-color: rgb(35, 35, 35);
   color: white;
-  margin: auto;
 }
 
 label {
@@ -26,9 +25,4 @@ input {
   height: 205px;
   width: 500px;
   text-align: center;
-}
-
-h4 {
-  text-align: center;
-  font-weight: bold;
 }
