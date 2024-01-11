@@ -20,5 +20,6 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name="index")
+    path('', views.index, name="index"),
+    path('signup/', views.signup, name="signup") # create account on post request, show account creation form on get request
 ]

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+{% endblock head %}
+
+{% block body %}
+  <div class="form">
+    {% if submitted == False %}
+      <form action = "{% url 'signup' %}" method = "POST">
+        {% csrf_token %}
+        {% comment %} {{ form }} {% endcomment %}
+
+        {{ form.email }}
+        <br>
+        {{ form.username }}
+        <br>
+        {{ form.password }}
+        <br>
+        {{ form.rePassword }}
+        {{ form.fromGUI }}
+        
+        <br>
+        <input type="submit" value="SignUp">
+      </form>
+    {% elif submitted == True and isValid == True %}
+      <h4>Account Created</h4>
+    {% elif submitted == True and isValid == False %}
+      <h4>{{ error }}</h4>
+    {% else %}
+      <p>Error</p>
+    {% endif %}
+
+    <script src="{% static 'js/signup.js' %}"></script>
+  </div>
+{% endblock body %}
