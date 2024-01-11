@@ -39,3 +39,8 @@
 6. Collect Static Files `python manage.py collectstatic`
 7. Do Migration `python manage.py migrate`
 8. This is the Final and the only step which needs to be repeated if running the server again after stopping it. Run server by `python manage.py runserver`
+
+
+## Documentation
+
+###### To visit the documentation, visit the `docs/` page on the API.

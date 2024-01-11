@@ -4,13 +4,27 @@ from . import functions as func
 from . import forms
 
 def index(request):
-  return render(request, 'index.html', context={})
+  if request.method == "GET":
+    return render(request, 'index.html', context={'title':'APM - API | Index'})
+  
+  elif request.method == "POST":
+    return JsonResponse({'error':'The API is working fine.'})
+  
+  else:
+    return HttpResponse("Only GET and POST requests are allowed on this endpoint.")
+
+def docs(request):
+  if request.method == "GET":
+    return render(request, 'docs.html', context={'title':'APM - API | Docs'})
+  
+  else:
+    return HttpResponse("Only GET requests are allowed on this endpoint.")
 
 def signup(request):
   # Checks for the type of Request (GET, POST, other)
   if request.method == "GET":
     form = forms.SignupForm()
-    return render(request, 'signup.html', context={'form':form, 'submitted':False})
+    return render(request, 'signup.html', context={'title':'APM - API | SignUp', 'form':form, 'submitted':False})
   
   elif request.method == "POST":
     # Creates the account
@@ -28,4 +42,4 @@ def signup(request):
       return(HttpResponse("'submitted' variable neither true nor false"))
   
   else:
-    return(HttpResponse("Only GET and POST requests are allowed."))
+    return(HttpResponse("Only GET and POST requests are allowed on this endpoint."))

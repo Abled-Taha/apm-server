@@ -21,5 +21,6 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name="index"),
-    path('signup/', views.signup, name="signup") # create account on post request, show account creation form on get request
+    path('docs/', views.docs, name="docs"), # Displays the documentaion for the API as HTML
+    path('signup/', views.signup, name="signup") # Create account on POST request, show account creation form on GET request
 ]

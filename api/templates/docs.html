@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/docs.css' %}">
+{% endblock head %}
+
+{% block body %}
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">URL</th>
+        <th scope="col">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">1</th>
+        <td>/</td>
+        <td>The Index page, it shows you an alert if the server is running correctly otherwise just a 404 page is returned.</td>
+      </tr>
+      <tr>
+        <th scope="row">2</th>
+        <td>docs/</td>
+        <td>The Documentation page, it shows you a table of all the endpoints of this API which can be accessed by a request and describes them. It also shows some other usefull information.</td>
+      </tr>
+      <tr>
+        <th scope="row">3</th>
+        <td>signup/</td>
+        <td>The SignUp page, If the request made to this endpoint is of type POST then it validates the credentials in the request and if everything is alright then it creates the user account. And if the request made to this endpoint is of type GET then it returns an HTML page with a form which needs to be filled with credentials which then are validated and if everything is alright then it creates the user account. But, if the the type of request is neither POST nor GET (PUT, etc) then it returns an HTML page which tells the user that only POST and GET requests are allowed to this endpoint.</td>
+      </tr>
+    </tbody>
+  </table>
+{% endblock body %}
