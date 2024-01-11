@@ -19,18 +19,18 @@ def readAllUsers():
   return(dict)
 
 def formValidationCreateUser(email, password, rePassword):
-  # Does 'password' and 'rePassword' match and are not empty?
-  if password != rePassword:
-    return(False, "Passwords do not match")
-
-  # Does verfication of 'password' parameter
-  if password == "" or len(password) < 6:
-    return(False, "Password not acceptable, create a strong Password")
-  
   # Does verification of 'email' parameter
   if email.endswith("@gmail.com") == False and email.endswith("@gmail.com ") == False:
     return(False, "Enter a GMAIL address")
   
+  # Does verfication of 'password' parameter
+  if password == "" or len(password) < 6:
+    return(False, "Password not acceptable, create a strong Password")
+  
+  # Does 'password' and 'rePassword' match?
+  if password != rePassword:
+    return(False, "Passwords do not match")
+
   # Is this Email already registered?
   if colUsers.find_one({'email':email}) != None:
     return(False, "An account already exists with the same Email")

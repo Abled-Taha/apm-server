@@ -32,7 +32,7 @@ def signup(request):
 
     # Checks whether the returned response should be HTML or JSON
     if request.POST["fromGUI"] == "true":
-      return(render(request, 'signup.html', context={'submitted':True, 'isValid':isValid, 'error':error}))
+      return(render(request, 'signup.html', context={'title':'APM - API | SignUp', 'submitted':True, 'isValid':isValid, 'error':error}))
 
     elif request.POST["fromGUI"] == "false":
       return(JsonResponse({'submitted':True, 'isValid':isValid, 'error':error}))
