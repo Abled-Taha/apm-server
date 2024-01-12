@@ -1,4 +1,6 @@
 import swiftcrypt
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from . import dbHandler
 from . import Config as ConfigFile
 
@@ -20,7 +22,7 @@ def readAllUsers():
 
 def formValidationCreateUser(email, password, rePassword):
   # Does verification of 'email' parameter
-  if email.endswith("@gmail.com") == False and email.endswith("@gmail.com ") == False:
+  if email.endswith("@gmail.com") == False:
     return(False, "Enter a GMAIL address")
   
   # Does verfication of 'password' parameter
@@ -37,6 +39,22 @@ def formValidationCreateUser(email, password, rePassword):
 
   return(True, "Succeeded")
 
+def formValidationLoginUser(email, password):
+  # Does verification of 'email' parameter
+  if email.endswith("@gmail.com") == False:
+    return(False, "Enter a GMAIL address", None)
+  
+  # Does verfication of 'password' parameter
+  if password == "" or len(password) < 6:
+    return(False, "Incorrect Credentials", None)
+
+  # Is this Email registered?
+  account = colUsers.find_one({'email':email})
+  if account == None:
+    return(False, "No account exists with this Email", None)
+
+  return(True, "Succeeded", account)
+
 def createUser(email, username, password, rePassword):
   isValid, error = formValidationCreateUser(email, password, rePassword)
   
@@ -49,6 +67,25 @@ def createUser(email, username, password, rePassword):
     except Exception as e:
       error = e
       return(isValid, error)
+    User.objects.create_user(username=username, email=email, password=passwordHash)
     error = "Account Created!"
   
   return(isValid, error)
+
+def loginUser(request, email, password):
+  isValid, error, account = formValidationLoginUser(email, password)
+  
+  if isValid:
+    username = account["username"]
+    salt = account["salt"]
+    passwordHash = account["passwordHash"]
+    checkPassword = swiftcrypt.Checker().verify_password(password, passwordHash, salt, "sha256")
+  
+    if checkPassword:
+      user = authenticate(username=username, password=passwordHash)
+      login(request, user)
+      error = "Logged In"
+      return(isValid, error, account)
+  
+  error = "Incorrect Credentials"
+  return(isValid, error, account)

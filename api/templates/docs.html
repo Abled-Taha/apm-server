@@ -31,6 +31,11 @@
         <td>signup/</td>
         <td>The SignUp page, If the request made to this endpoint is of type POST then it validates the credentials in the request and if everything is alright then it creates the user account. And if the request made to this endpoint is of type GET then it returns an HTML page with a form which needs to be filled with credentials which then are validated and if everything is alright then it creates the user account. But, if the the type of request is neither POST nor GET (PUT, etc) then it returns an HTML page which tells the user that only POST and GET requests are allowed to this endpoint.</td>
       </tr>
+      <tr>
+        <th scope="row">4</th>
+        <td>login/</td>
+        <td>The Login page, if the request made to this endpoint is of type Post then it validates the credentials in the request and if everything is alright then it logs the user in. And if the request made to this endpoint is of type GET then it returns an HTML page with a form which needs to be filled with credentials which then are validated and if everything is alright then it logs the user in. But, if the type of request is neither POST nor GET (PUT, etc) then it returns an HTML page which tells the user that only POST and GET requests are allowed to this endpoint.</td>
+      </tr>
     </tbody>
   </table>
 {% endblock body %}

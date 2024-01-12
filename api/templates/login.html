@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <title>{{ title }}</title>
+{% endblock head %}
+
+{% block body %}
+  {% if submitted == False %}
+    <style>
+      body {
+        margin: auto;
+      }
+    </style>
+
+    <div class="form">
+      <form action = "{% url 'login' %}" method = "POST">
+        {% csrf_token %}
+        {% comment %} {{ form }} {% endcomment %}
+
+        {{ form.email }}
+        <br>
+        {{ form.password }}
+        {{ form.fromGUI }}
+        
+        <br>
+        <input type="submit" value="Login">
+      </form>
+
+      <script src="{% static 'js/login.js' %}"></script>
+    </div>
+
+  {% elif submitted == True and error == "Logged In" %}
+    <div class="alert alert-success" role="alert">
+      <h4 class="alert-heading">Logged In</h4>
+      <p>{{ username }}, You have been logged in.</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'index' %}">Go Back</a></p>
+    </div>
+
+  {% elif submitted == True and error != "Logged In" %}
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error</h4>
+      <p>{{ error }}</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'login' %}">Go Back</a></p>
+    </div>
+
+  {% else %}
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error</h4>
+      <p>Unknown error, something went wrong.</p>
+      <hr>
+      <p class="mb-0"><a class=boldLink href="{% url 'login' %}">Go Back</a></p>
+    </div>
+    
+  {% endif %}
+{% endblock body %}

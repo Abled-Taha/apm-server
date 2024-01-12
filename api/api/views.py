@@ -43,3 +43,35 @@ def signup(request):
   
   else:
     return(HttpResponse("Only GET and POST requests are allowed on this endpoint."))
+  
+def login(request):
+  # Checks for the type of Request (GET, POST, other)
+  if request.method == "GET":
+    form = forms.LoginForm()
+    return render(request, 'login.html', context={'title':'APM - API | Login', 'form':form, 'submitted':False})
+  
+  elif request.method == "POST":
+  #   # Creates the account
+    isValid, error, account = func.loginUser(request=request, email=request.POST["email"], password=request.POST["password"])
+    
+  #   if error != "Logged In":
+  #     return render(request, 'login.html', context={})
+    
+    
+    # Sets a dummy account variable if the account variable is None
+    if account == None:
+      account = {'username':''}
+
+    # Checks whether the returned response should be HTML or JSON
+    if request.POST["fromGUI"] == "true":
+      return(render(request, 'login.html', context={'title':'APM - API | Login', 'submitted':True, 'isValid':isValid, 'error':error, 'username':account["username"]}))
+
+    elif request.POST["fromGUI"] == "false":
+      return(JsonResponse({'submitted':True, 'isValid':isValid, 'error':error, 'username':account["username"]}))
+
+    # If the the 'submitted' variable is null then the returned response is HTML
+    else:
+      return(HttpResponse("'submitted' variable neither true nor false"))
+  
+  else:
+    return(HttpResponse("Only GET and POST requests are allowed on this endpoint."))

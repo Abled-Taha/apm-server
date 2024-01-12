@@ -1,0 +1,28 @@
+html {
+  min-height: 100%;
+  display: grid;
+}
+
+body {
+  background-color: rgb(35, 35, 35);
+  color: white;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  border: 2px solid black;
+  border-radius: 10px;
+  margin: 5px;
+}
+
+.form {
+  border: 2px solid black;
+  background: url("/static/images/login/loginDivBg.jpg") 0;
+  border-radius: 25px;
+  height: 205px;
+  width: 500px;
+  text-align: center;
+}

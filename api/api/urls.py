@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name="index"),
     path('docs/', views.docs, name="docs"), # Displays the documentaion for the API as HTML
-    path('signup/', views.signup, name="signup") # Create account on POST request, show account creation form on GET request
+    path('signup/', views.signup, name="signup"), # Create account on POST request, show account creation form on GET request
+    path('login/', views.login, name="login") # Login on POST request, show login form on GET request
 ]
