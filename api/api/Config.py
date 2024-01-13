@@ -5,8 +5,10 @@ class Config():
     with open('config/config.json') as configFile:
       self.configData = json.load(configFile)
 
-      self.debug = self.configData['debug']
       self.secretKey = self.configData['secretKey']
+      
+      self.debug = self.configData['debug']
+      self.supplyGUIResponse = self.configData['supplyGUIResponse']
       
       self.hostDB = self.configData['hostDB']
       self.portDB = self.configData['portDB']

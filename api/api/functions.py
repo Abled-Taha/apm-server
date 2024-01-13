@@ -5,6 +5,7 @@ from . import dbHandler
 from . import Config as ConfigFile
 
 Config = ConfigFile.Config()
+supplyGUIResponse = Config.supplyGUIResponse
 
 client, db, colUsers, colUsersData = dbHandler.connect(hostDB=Config.hostDB, portDB=Config.portDB, nameDB=Config.nameDB, username=Config.username, pwd=Config.pwd)
 
