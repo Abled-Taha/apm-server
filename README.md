@@ -4,7 +4,7 @@
 
 ###### MongoDB must have been installed already and the root user must have setup already.
 
-###### All the credentials can be changed but need to be edited in this Project's `config.json` file to be matched.
+###### All the credentials can be changed but need to be edited in this Project's `api/config/config.json` file to be matched.
 
 1. Login with root user.
 2. Make DB `use apm`
