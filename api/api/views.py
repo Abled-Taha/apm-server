@@ -87,3 +87,17 @@ def login(request):
     if func.supplyGUIResponse:
       return(HttpResponse("Only GET and POST requests are allowed on this endpoint."))
     return(HttpResponse("Only GET requests are allowed on this endpoint."))
+
+def vault(request):
+  if request.method == "GET":
+    return(HttpResponse("Only GET requests are allowed on this endpoint."))
+  
+  elif request.method == "POST":
+    try:
+      # isValid, error, account = func.loginUser(request=request, email=request.POST["email"], password=request.POST["password"])
+      pass
+    except Exception as e:
+      return(False, "Form not valid.")
+
+  else:
+    return(HttpResponse("Only GET requests are allowed on this endpoint."))
