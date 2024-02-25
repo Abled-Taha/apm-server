@@ -1,4 +1,13 @@
 * {
   margin: 0;
   padding: 0;
+  color: white;
+}
+
+body {
+  background-color: rgb(54, 69, 73);
+}
+
+.section-main {
+  margin: 0.5em;
 }
