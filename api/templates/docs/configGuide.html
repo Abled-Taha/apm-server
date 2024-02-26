@@ -13,7 +13,7 @@
       </p>
     </div>
 
-    <ol class="ol-configFields">
+    <ol class="ol ol-configFields">
       <li>
         <h4 class="h4-guide">debug:</h4>
           <div class="div-para">
@@ -44,11 +44,54 @@
           <div class="div-para">
             <p>
               This field contains the list of hosts which can serve the API.
-              This field must be changed after setting the "<span class="span-important">debug</span>" to "<span class="span-important">true</span>".            </p>
-              <span class="span-important">["127.0.0.1"]</span> this can be used if the API is served locally or the ip can substituted for the host name or DNS if the API is being served and hosted on a server.
+              This field must be changed after setting the "<span class="span-important">debug</span>" to "<span class="span-important">true</span>".
+              <span class="span-important">["127.0.0.1"]</span> this can be used if the API is served locally or the ip can be substituted for the host name or DNS if the API is being served and hosted on a server.
               For example, <span class="span-important">["example.com"]</span> can be used if the server serving the API has a DNS of "<span class="span-important">example.com</span>".
               At last, <span class="span-important">["*"]</span> this wildcard can be used to allow anyone to serve this API, but it may pose some security risks.
+            </p>
           </div>
+        <br>
+      </li>
+
+      <li>
+        <h4 class="h4-guide">username_min_length | username_max_length</h4>
+          <div class="div-para">
+            <p>
+              These fields determine, when a user creates a new account and sets up a username, what the minimum and maximum length of the username should be.
+              These can be changed but are not necessary to do so.
+            </p>
+          </div>
+        <br>
+      </li>
+
+      <li>
+        <h4 class="h4-guide">password_min_length | password_max_length</h4>
+          <div class="div-para">
+            <p>
+              These fields determine, when a user creates a new account and sets up a password, what the minimum and maximum length of the password should be.
+              These can be changed but are not necessary to do so.
+            </p>
+          </div>
+        <br>
+      </li>
+    </ol>
+
+    <h4 class="h4-guide">Default Config File</h4>
+    <iframe class="iframe-code" frameborder="0" scrolling="no" style="width:100%; height:184px;" allow="clipboard-write" src="https://emgithub.com/iframe.html?target=https%3A%2F%2Fgithub.com%2FAbled-Taha%2Fapm-server%2Fblob%2Fmain%2Fconfig.json&style=a11y-dark&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></iframe>
+
+
+    <h1 class="h1-guide">POST Demo Data</h1>
+    <div class="div-para div-centered">
+      <p>
+        This section contains some demo data for the post requests on different endpoints.
+        The demo data is in the form json.
+      </p>
+    </div>
+
+    <ol class="ol ol-demoData">
+      <li>
+        <h4 class="h4-guide">/signup</h4>
+            <iframe class="iframe-code" frameborder="0" scrolling="no" allow="clipboard-write" src="https://pastebin.com/embed_iframe/d6sPY8RR?theme=dark" style="width:100%; height:184px"></iframe>
         <br>
       </li>
     </ol>
