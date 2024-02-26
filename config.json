@@ -1,5 +1,14 @@
 {
   "debug":true,
   "secret_key":"django-insecure-czhaxh*di+t*laxo%=bmj8e+8970)#8tgt&77)7&ixd#3j=j=l",
-  "allowed_hosts":[]
+  "allowed_hosts":[],
+  "db_name":"apm",
+  "db_username":"apm",
+  "db_host":"127.0.0.1",
+  "db_port":"27017",
+  "db_password":"apmuserpass",
+  "username_min_length":3,
+  "username_max_length":10,
+  "password_min_length":6,
+  "password_max_length":20
 }

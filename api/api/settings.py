@@ -1,13 +1,19 @@
 from pathlib import Path
 from Config import Config as ConfigClass
+from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Directory where 'manage.py' is located.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Getting Creds
+# Getting Config
+global ConfigObj
 ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
+
+# Setting Up Database
+global db
+db = DatabaseHandlerClass(ConfigObj.config["db_name"], ConfigObj.config["db_host"], ConfigObj.config["db_port"], ConfigObj.config["db_username"], ConfigObj.config["db_password"])
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -67,12 +73,12 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation
