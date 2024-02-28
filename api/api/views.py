@@ -64,7 +64,7 @@ def signup(request):
       
       if isValid:
         dataAccount = data
-        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(16)
+        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.config["salt_length"])
         dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
         dataAccount["sessionIds"] = []
         del dataAccount["rePassword"]; del dataAccount["password"]
