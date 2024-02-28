@@ -13,18 +13,18 @@ ConfigObj.readConfig()
 
 # Setting Up Database
 global db
-db = DatabaseHandlerClass(ConfigObj.config["db_name"], ConfigObj.config["db_host"], ConfigObj.config["db_port"], ConfigObj.config["db_username"], ConfigObj.config["db_password"])
+db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ConfigObj.config["secret_key"]
+SECRET_KEY = ConfigObj.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = ConfigObj.config["debug"]
+DEBUG = ConfigObj.debug
 
-ALLOWED_HOSTS = ConfigObj.config["allowed_hosts"]
+ALLOWED_HOSTS = ConfigObj.allowed_hosts
 
 
 # Application definition

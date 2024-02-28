@@ -16,13 +16,13 @@ def validateSigninData(email, password):
 
 def generateSessionId():
   characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
-  sessionId = ''.join(secrets.choice(characters) for i in range(ConfigObj.config["sessionId_length"]))
+  sessionId = ''.join(secrets.choice(characters) for i in range(ConfigObj.sessionId_length))
   return(sessionId)
 
 def validateSignupData(email, username, password, rePassword):
   if db.find_one("users", {"email":email}) == None:
-    if len(username) >= ConfigObj.config["username_min_length"] and len(username) <= ConfigObj.config["username_max_length"] and username.isalnum():
-      if password == rePassword and len(password) >= ConfigObj.config["password_min_length"] and len(password) <= ConfigObj.config["password_max_length"]:
+    if len(username) >= ConfigObj.username_min_length and len(username) <= ConfigObj.username_max_length and username.isalnum():
+      if password == rePassword and len(password) >= ConfigObj.password_min_length and len(password) <= ConfigObj.password_max_length:
         return(True, {"errorCode":0, "errorMessage":"Success"})
       return(False, {"errorCode":1, "errorMessage":"Error in Password field"})
     return(False, {"errorCode":1, "errorMessage":"Error in Username field"})
@@ -64,7 +64,7 @@ def signup(request):
       
       if isValid:
         dataAccount = data
-        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.config["salt_length"])
+        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
         dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
         dataAccount["sessionIds"] = []
         del dataAccount["rePassword"]; del dataAccount["password"]
