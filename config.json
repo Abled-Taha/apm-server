@@ -12,5 +12,6 @@
   "password_min_length":6,
   "password_max_length":20,
   "sessionId_length":16,
-  "salt_length":16
+  "salt_length":16,
+  "max_sessions":10
 }

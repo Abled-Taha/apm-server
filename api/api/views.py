@@ -43,6 +43,8 @@ def signin(request):
       if isValid:
         sessionId = generateSessionId()
         account["sessionIds"].append({"name":"", "sessionId":sessionId})
+        if len(account["sessionIds"]) > ConfigObj.max_sessions:
+          del account["sessionIds"][0]
 
         if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
           return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId}))

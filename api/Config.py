@@ -23,3 +23,4 @@ class Config(object):
       self.password_max_length = self.config["password_max_length"]
       self.sessionId_length = self.config["sessionId_length"]
       self.salt_length = self.config["salt_length"]
+      self.max_sessions = self.config["max_sessions"]
