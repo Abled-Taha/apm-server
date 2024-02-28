@@ -2,7 +2,22 @@ from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
 import json
 import swiftcrypt
+import secrets
+import string
 from .settings import db, ConfigObj
+
+def validateSigninData(email, password):
+  account = db.find_one("users", {"email":email})
+  if account != None:
+    if swiftcrypt.Checker().verify_password(password, account["passwordHash"], account["salt"], "sha256"):
+      return(True, {"errorCode":0, "errorMessage":"Success"}, account)
+    return(False, {"errorCode":1, "errorMessage":"Incorrect Password"}, account)
+  return(False, {"errorCode":1, "errorMessage":"No Account exists with that Email."}, account)
+
+def generateSessionId():
+  characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
+  sessionId = ''.join(secrets.choice(characters) for i in range(ConfigObj.config["sessionId_length"]))
+  return(sessionId)
 
 def validateSignupData(email, username, password, rePassword):
   if db.find_one("users", {"email":email}) == None:
@@ -18,11 +33,30 @@ def validateSignupData(email, username, password, rePassword):
 
 
 def signin(request):
-  pass
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+  else:
+    try:
+      data = json.loads(request.body)
+      isValid, error, account = validateSigninData(data["email"], data["password"])
+      
+      if isValid:
+        sessionId = generateSessionId()
+        account["sessionIds"].append({"name":"", "sessionId":sessionId})
+
+        if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId}))
+        
+      return(JsonResponse(error))
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+  
 
 def signup(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
+  
   else:
     try:
       data = json.loads(request.body)
@@ -32,12 +66,12 @@ def signup(request):
         dataAccount = data
         dataAccount["salt"] = swiftcrypt.Salts().generate_salt(16)
         dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
+        dataAccount["sessionIds"] = []
         del dataAccount["rePassword"]; del dataAccount["password"]
         
         if db.insert_one("users", dataAccount) != None:
           return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
         
-        print("No Collection Found with that Name")
       return(JsonResponse(error))
     except Exception as e:
       print(e)

@@ -7,14 +7,20 @@ class DatabaseHandler(object):
     self.collectionUsers = self.db["users"]
     self.collectionUsersData = self.db["users-data"]
     
-  def find_one(self, collection, data):
+  def find_one(self, collection, query):
     if collection == "users":
-      result = self.collectionUsers.find_one(data)
+      result = self.collectionUsers.find_one(query)
       return(result)
     return(None)
   
   def insert_one(self, collection, data):
     if collection == "users":
       self.collectionUsers.insert_one(data)
+      return(True)
+    return(None)
+  
+  def find_one_and_update(self, collection, query, fieldName, fieldData):
+    if collection == "users":
+      self.collectionUsers.find_one_and_update(query, {"$set":{fieldName:fieldData}})
       return(True)
     return(None)

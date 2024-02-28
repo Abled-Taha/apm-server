@@ -10,5 +10,6 @@
   "username_min_length":3,
   "username_max_length":10,
   "password_min_length":6,
-  "password_max_length":20
+  "password_max_length":20,
+  "sessionId_length":16
 }
