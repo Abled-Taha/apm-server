@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
 import json
+import swiftcrypt
 from .settings import db, ConfigObj
 
 def validateSignupData(email, username, password, rePassword):
@@ -12,6 +13,10 @@ def validateSignupData(email, username, password, rePassword):
     return(False, {"errorCode":1, "errorMessage":"Error in Username field"})
   return(False, {"errorCode":1, "errorMessage":"Error in Email field"})
 
+
+
+
+
 def signin(request):
   pass
 
@@ -22,9 +27,16 @@ def signup(request):
     try:
       data = json.loads(request.body)
       isValid, error = validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
+      
       if isValid:
-        if db.insert_one("users", data) != None:
+        dataAccount = data
+        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(16)
+        dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
+        del dataAccount["rePassword"]; del dataAccount["password"]
+        
+        if db.insert_one("users", dataAccount) != None:
           return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+        
         print("No Collection Found with that Name")
       return(JsonResponse(error))
     except Exception as e:
