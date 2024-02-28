@@ -17,6 +17,7 @@
       <li>
         <h4 class="h4-guide">debug:</h4>
           <div class="div-para">
+            <p>Data Type: Boolean</p>
             <p>
               This field determines that should the API run in debug mode or not.
               When in debug mode, the API, on encountering errors, may print out additional information in the browser which is a critical security risk.
@@ -29,6 +30,7 @@
       <li>
         <h4 class="h4-guide">security_key: (MUST BE CHANGED)</h4>
           <div class="div-para">
+            <p>Data Type: String</p>
             <p>
               This field contains the Secret Key of Django.
               When setting up this project, the user needs to change this field.
@@ -42,6 +44,7 @@
       <li>
         <h4 class="h4-guide">allowed_hosts: (MUST BE CHANGED)</h4>
           <div class="div-para">
+            <p>Data Type: Array</p>
             <p>
               This field contains the list of hosts which can serve the API.
               This field must be changed after setting the "<span class="span-important">debug</span>" to "<span class="span-important">true</span>".
@@ -54,8 +57,45 @@
       </li>
 
       <li>
+        <h4 class="h4-guide">db_host | db_port</h4>
+          <div class="div-para">
+            <p>Data Type: String</p>
+            <p>
+              These Fields contain the IP and PORT of the machine running the DB.
+              If the DB is running locally and the PORT is not changed then the default value would already work.
+            </p>
+          </div>
+        <br>
+      </li>
+
+      <li>
+        <h4 class="h4-guide">db_username | db_password</h4>
+          <div class="div-para">
+            <p>Data Type: String</p>
+            <p>
+              These Fields contain the Username and Password of the user which has the rights to access the DB.
+              If the REAMD.md file is followed exactly then these fields should not be changed in the config.
+            </p>
+          </div>
+        <br>
+      </li>
+
+      <li>
+        <h4 class="h4-guide">db_name</h4>
+          <div class="div-para">
+            <p>Data Type: String</p>
+            <p>
+              This field contains the name of the DB which is used to store the data of the Application.
+              If the REAMD.md file is followed exactly then this field should not be changed in the config.
+            </p>
+          </div>
+        <br>
+      </li>
+
+      <li>
         <h4 class="h4-guide">username_min_length | username_max_length</h4>
           <div class="div-para">
+            <p>Data Type: Integer</p>
             <p>
               These fields determine, when a user creates a new account and sets up a username, what the minimum and maximum length of the username should be.
               These can be changed but are not necessary to do so.
@@ -67,6 +107,7 @@
       <li>
         <h4 class="h4-guide">password_min_length | password_max_length</h4>
           <div class="div-para">
+            <p>Data Type: Integer</p>
             <p>
               These fields determine, when a user creates a new account and sets up a password, what the minimum and maximum length of the password should be.
               These can be changed but are not necessary to do so.
@@ -78,6 +119,7 @@
       <li>
         <h4 class="h4-guide">sessionId_length</h4>
           <div class="div-para">
+            <p>Data Type: Integer</p>
             <p>
               When a user login into the account, he is allotted a new session id. This field determines the length of that session id.
               This can be changed but are not necessary and recommended to do so.
@@ -89,6 +131,7 @@
       <li>
         <h4 class="h4-guide">salt_length</h4>
           <div class="div-para">
+            <p>Data Type: Integer</p>
             <p>
               When a user creates an account, a new salt is generated. This field determines the length of that salt.
               This can be changed but are not necessary and recommended to do so.
