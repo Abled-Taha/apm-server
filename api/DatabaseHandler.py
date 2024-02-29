@@ -29,4 +29,7 @@ class DatabaseHandler(object):
     if collection == "users":
       result = self.collectionUsers.find_one_and_update(query, {"$set":{fieldName:fieldData}})
       return(result)
+    elif collection == "users-data":
+      result = self.collectionUsersData.find_one_and_update(query, {"$set":{fieldName:fieldData}})
+      return(result)
     return(None)
