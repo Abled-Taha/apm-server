@@ -32,9 +32,6 @@ def validateSignupData(email, username, password, rePassword):
 
 
 
-def home(request):
-  return(render(request, "home/index.html", {'title':'APM - Home'}))
-
 def signin(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
@@ -56,7 +53,6 @@ def signin(request):
     except Exception as e:
       print(e)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
-  
 
 def signup(request):
   if request.method != "POST":
@@ -75,12 +71,38 @@ def signup(request):
         del dataAccount["rePassword"]; del dataAccount["password"]
         
         if db.insert_one("users", dataAccount) != None:
+          dataPasswords = {"email":dataAccount["email"], "passwords":[]}
+          db.insert_one("users-data", dataPasswords)
           return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
         
       return(JsonResponse(error))
     except Exception as e:
       print(e)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+    
+def vaultGet(request):
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+
+      if account != None:
+        for entry in account["sessionIds"]:
+          if entry["sessionId"] == data["sessionId"]:
+            dataPasswords = db.find_one("users-data", {"email":account["email"]})
+            return(JsonResponse(dataPasswords["passwords"], safe=False))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+    
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+
+def home(request):
+  return(render(request, "home/index.html", {'title':'APM - Home'}))
 
 def docs(request):
   return(render(request, "docs/index.html", {'title':'APM - Docs'}))

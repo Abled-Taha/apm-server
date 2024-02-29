@@ -11,16 +11,22 @@ class DatabaseHandler(object):
     if collection == "users":
       result = self.collectionUsers.find_one(query)
       return(result)
+    elif collection == "users-data":
+      result = self.collectionUsersData.find_one(query)
+      return(result)
     return(None)
   
   def insert_one(self, collection, data):
     if collection == "users":
       self.collectionUsers.insert_one(data)
       return(True)
+    elif collection == "users-data":
+      self.collectionUsersData.insert_one(data)
+      return(True)
     return(None)
   
   def find_one_and_update(self, collection, query, fieldName, fieldData):
     if collection == "users":
-      self.collectionUsers.find_one_and_update(query, {"$set":{fieldName:fieldData}})
-      return(True)
+      result = self.collectionUsers.find_one_and_update(query, {"$set":{fieldName:fieldData}})
+      return(result)
     return(None)
