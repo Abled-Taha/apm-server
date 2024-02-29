@@ -135,7 +135,32 @@ def vaultEdit(request):
   pass
 
 def vaultDelete(request):
-  pass
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+  
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+
+      if account != None:
+        if validateSession(account, data):
+          dataPasswords = db.find_one("users-data", {"email":account["email"]})
+          for entry in dataPasswords["passwords"]:
+            if entry["name"] == data["name"]:
+              dataPasswords["passwords"].remove(entry)
+
+              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+
+              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def home(request):
   return(render(request, "home/index.html", {'title':'APM - Home'}))
