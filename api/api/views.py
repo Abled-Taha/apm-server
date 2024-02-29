@@ -29,6 +29,12 @@ def validateSignupData(email, username, password, rePassword):
   return(False, {"errorCode":1, "errorMessage":"Error in Email field"})
 
 
+def validateSession(account, data):
+  for entry in account["sessionIds"]:
+    if entry["sessionId"] == data["sessionId"]:
+      return(True)
+  return(False)
+
 
 
 
@@ -90,10 +96,9 @@ def vaultGet(request):
       account = db.find_one("users", {"email":data["email"]})
 
       if account != None:
-        for entry in account["sessionIds"]:
-          if entry["sessionId"] == data["sessionId"]:
-            dataPasswords = db.find_one("users-data", {"email":account["email"]})
-            return(JsonResponse(dataPasswords["passwords"], safe=False))
+        if validateSession(account, data):
+          dataPasswords = db.find_one("users-data", {"email":account["email"]})
+          return(JsonResponse(dataPasswords["passwords"], safe=False))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
     
@@ -111,14 +116,13 @@ def vaultNew(request):
       account = db.find_one("users", {"email":data["email"]})
       
       if account != None:
-        for entry in account["sessionIds"]:
-          if entry["sessionId"] == data["sessionId"]:
-            dataPasswords = db.find_one("users-data", {"email":account["email"]})
-            dataPasswords["passwords"].append({"name":data["name"], "password":data["password"]})
+        if validateSession(account, data):
+          dataPasswords = db.find_one("users-data", {"email":account["email"]})
+          dataPasswords["passwords"].append({"name":data["name"], "password":data["password"]})
             
-            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+          if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
 
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
