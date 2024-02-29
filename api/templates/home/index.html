@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>{{title}}</title>
+<link rel="stylesheet" href="{% static "css/home/index.css" %}">
+{% endblock head %}
+
+{% block body %}
+
+<div class="alert alert-success alert-dark" role="alert">
+  <h4 class="alert-heading">Hooray!</h4>
+  <p>Aww yeah, The Server is running just fine.</p>
+  <hr>
+  <p class="mb-0">Documentation:</p>
+  <a class="link" href="{% url "Docs" %}">/docs</a>
+  <hr>
+  <p class="mb-0">GitHub Link:</p>
+  <a class="link" href="https://github.com/Abled-Taha/apm-app">App</a>
+  <br>
+  <a class="link" href="https://github.com/Abled-Taha/apm-server">Server</a>
+</div>
+
+{% endblock body %}

@@ -32,6 +32,9 @@ def validateSignupData(email, username, password, rePassword):
 
 
 
+def home(request):
+  return(render(request, "home/index.html", {'title':'APM - Home'}))
+
 def signin(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
