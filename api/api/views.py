@@ -35,14 +35,10 @@ def validateSession(account, data):
       return(True)
   return(False)
 
-
-
-
 def signin(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
   else:
-    print(request.body)
     try:
       data = json.loads(request.body)
       isValid, error, account = validateSigninData(data["email"], data["password"])
