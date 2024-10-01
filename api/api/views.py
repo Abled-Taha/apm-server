@@ -95,7 +95,7 @@ def vaultGet(request):
       if account != None:
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          return(JsonResponse(dataPasswords["passwords"], safe=False))
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
     
