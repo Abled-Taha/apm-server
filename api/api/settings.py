@@ -1,4 +1,5 @@
 from pathlib import Path
+from django.core.management.commands.runserver import Command as runserver
 from Config import Config as ConfigClass
 from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
 
@@ -10,6 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 global ConfigObj
 ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
+
+# Changing the server port
+runserver.default_port = ConfigObj.server_port
 
 # Setting Up Database
 global db

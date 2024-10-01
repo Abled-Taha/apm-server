@@ -17,6 +17,7 @@ class Config(object):
       self.db_host = self.config["db_host"]
       self.db_port = self.config["db_port"]
       self.db_password = self.config["db_password"]
+      self.server_port = self.config["server_port"]
       self.username_min_length = self.config["username_min_length"]
       self.username_max_length = self.config["username_max_length"]
       self.password_min_length = self.config["password_min_length"]
