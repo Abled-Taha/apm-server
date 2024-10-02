@@ -5,6 +5,7 @@ import swiftcrypt
 import secrets
 import string
 from .settings import db, ConfigObj
+from . import encryptor
 
 def validateSigninData(email, password):
   account = db.find_one("users", {"email":email})
@@ -95,11 +96,16 @@ def vaultGet(request):
       if account != None:
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
+          for value in dataPasswords["passwords"]:
+            passwordDecrypt = encryptor.decryptor(account["salt"], account["passwordHash"], value["password"])
+            value["password"] = passwordDecrypt
+
           return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
     
     except Exception as e:
+      print("exception")
       print(e)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
     
@@ -114,8 +120,10 @@ def vaultNew(request):
       
       if account != None:
         if validateSession(account, data):
+          passwordEncrypt = encryptor.encrypt(account["salt"], data["password"], account["passwordHash"])
+
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          dataPasswords["passwords"].append({"name":data["name"], "password":data["password"]})
+          dataPasswords["passwords"].append({"name":data["name"], "password":passwordEncrypt})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
