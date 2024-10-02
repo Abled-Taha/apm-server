@@ -150,7 +150,8 @@ def vaultEdit(request):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           for entry in dataPasswords["passwords"]:
             if entry["name"] == data["name"]:
-              entry["password"] = data["newPassword"]
+              newPasswordEncrypt = encryptor.encrypt(account["salt"], data["newPassword"], account["passwordHash"])
+              entry["password"] = newPasswordEncrypt
               entry["name"] = data["newName"]
               if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
