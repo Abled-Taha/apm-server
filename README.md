@@ -13,9 +13,10 @@
 5. Run ```pip install -r ./requirements.txt```
 6. Run ```cd ./api```
 7. Run ```python manage.py collectstatic```
-8. Run ```python manage.py runserver```
-9. Open http://127.0.0.1:8000/docs and follow the recommendations there to securely setup the API
-10. Restart the API
+8. Run ```cd ..```
+9. Run ```python main.py```
+10. Open http://127.0.0.1:8080/docs and follow the recommendations there to securely setup the API
+11. Restart the API
 
 ### Todo
 1. Convert the Program to .exe
