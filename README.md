@@ -19,5 +19,6 @@
 11. Restart the API
 
 ### Todo
-1. Convert the Program to .exe
-2. Make an installer with Inno Setup
+1. Make /logout endpoint
+2. Add ability to change session name
+3. Add ability to delete session
