@@ -22,3 +22,4 @@
 1. Make /logout endpoint
 2. Add ability to change session name
 3. Add ability to delete session
+4. Add ability to change user credentials
