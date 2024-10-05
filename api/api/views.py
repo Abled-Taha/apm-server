@@ -46,7 +46,11 @@ def signin(request):
       
       if isValid:
         sessionId = generateSessionId()
-        account["sessionIds"].append({"name":"", "sessionId":sessionId})
+        try:
+          sessionName = data["sessionName"]
+        except:
+          sessionName = ""
+        account["sessionIds"].append({"name":sessionName, "sessionId":sessionId})
         if len(account["sessionIds"]) > ConfigObj.max_sessions:
           del account["sessionIds"][0]
 
