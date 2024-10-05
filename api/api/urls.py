@@ -12,5 +12,7 @@ urlpatterns = [
     path('vault-new/', views.vaultNew, name="Vault New"),
     path('vault-edit/', views.vaultEdit, name="Vault Edit"),
     path('vault-delete/', views.vaultDelete, name="Vault Delete"),
+    path('session-get/', views.sessionGet, name="Session Get"),
+    path('session-edit/', views.sessionEdit, name="Session Edit"),
     path('session-delete/', views.sessionDelete, name="Session Delete"),
 ]

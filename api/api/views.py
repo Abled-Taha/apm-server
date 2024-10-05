@@ -196,6 +196,29 @@ def vaultDelete(request):
       print(e)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
+def sessionGet(request):
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+
+      if account != None:
+        if validateSession(account, data):
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionIds":account["sessionIds"]}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+    
+    except Exception as e:
+      print("exception")
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+
+def sessionEdit(request):
+  pass
+
 def sessionDelete(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
