@@ -217,7 +217,29 @@ def sessionGet(request):
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def sessionEdit(request):
-  pass
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+      
+      if account != None:
+        if validateSession(account, data):
+          for entry in account["sessionIds"]:
+            if entry["sessionId"] == data["sessionIdW"]:
+              entry["name"] = data["newName"]
+              if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              
+              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that Name"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def sessionDelete(request):
   if request.method != "POST":
