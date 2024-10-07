@@ -190,7 +190,7 @@ def vaultDelete(request):
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           for entry in dataPasswords["passwords"]:
-            if entry["name"] == data["name"]:
+            if entry["id"] == data["id"]:
               dataPasswords["passwords"].remove(entry)
 
               if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
