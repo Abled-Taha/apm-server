@@ -9,4 +9,4 @@ ConfigObj.readConfig()
 
 # Running wsgi server
 os.chdir("./api")
-subprocess.call(["waitress-serve", f"--listen=*:{ConfigObj.server_port}", "api.wsgi:application"])
+subprocess.call(["waitress-serve", f"--listen={ConfigObj.server_host}:{ConfigObj.server_port}", "api.wsgi:application"])

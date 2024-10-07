@@ -13,6 +13,7 @@ ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
 
 # Changing the server port
+runserver.default_addr = ConfigObj.server_host
 runserver.default_port = ConfigObj.server_port
 
 # Setting Up Database
