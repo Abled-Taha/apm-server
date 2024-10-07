@@ -25,9 +25,9 @@ def validateSignupData(email, username, password, rePassword):
     if len(username) >= ConfigObj.username_min_length and len(username) <= ConfigObj.username_max_length and username.isalnum():
       if password == rePassword and len(password) >= ConfigObj.password_min_length and len(password) <= ConfigObj.password_max_length:
         return(True, {"errorCode":0, "errorMessage":"Success"})
-      return(False, {"errorCode":1, "errorMessage":"Error in Password field"})
-    return(False, {"errorCode":1, "errorMessage":"Error in Username field"})
-  return(False, {"errorCode":1, "errorMessage":"Error in Email field"})
+      return(False, {"errorCode":1, "errorMessage":f"The passwords must match and must have more than {ConfigObj.password_min_length} and less than {ConfigObj.password_max_length} characters"})
+    return(False, {"errorCode":1, "errorMessage":f"The username must have more than {ConfigObj.username_min_length} and less than {ConfigObj.username_max_length} characters"})
+  return(False, {"errorCode":1, "errorMessage":"User already exists with this email"})
 
 
 def validateSession(account, data):
