@@ -72,14 +72,15 @@ def signup(request):
       isValid, error = validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
       
       if isValid:
-        dataAccount = data
+        dataAccount = {}
+        dataAccount["email"] = data["email"]
+        dataAccount["username"] = data["username"]
         dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
         dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
         dataAccount["sessionIds"] = []
-        del dataAccount["rePassword"]; del dataAccount["password"]
         
         if db.insert_one("users", dataAccount) != None:
-          dataPasswords = {"email":dataAccount["email"], "passwords":[]}
+          dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
           db.insert_one("users-data", dataPasswords)
           return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
         
@@ -131,9 +132,11 @@ def vaultNew(request):
             url = data["url"]
           except:
             data["url"] = ""
-          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"]})
+          dataPasswords["passwordIndex"] += 1
+          dataPasswords["passwords"].append({"id":dataPasswords["passwordIndex"], "name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"]})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+            db.find_one_and_update("user-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
 
@@ -157,7 +160,7 @@ def vaultEdit(request):
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           for entry in dataPasswords["passwords"]:
-            if entry["name"] == data["name"]:
+            if entry["id"] == data["id"]:
               newPasswordEncrypt = encryptor.encrypt(account["salt"], data["newPassword"], account["passwordHash"])
               entry["password"] = newPasswordEncrypt
               entry["name"] = data["newName"]
