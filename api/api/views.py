@@ -76,7 +76,7 @@ def signup(request):
         dataAccount["email"] = data["email"]
         dataAccount["username"] = data["username"]
         dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
-        dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(dataAccount["password"], dataAccount["salt"], "sha256")
+        dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(data["password"], dataAccount["salt"], "sha256")
         dataAccount["sessionIds"] = []
         
         if db.insert_one("users", dataAccount) != None:
@@ -87,7 +87,7 @@ def signup(request):
       return(JsonResponse(error))
     except Exception as e:
       print(e)
-      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form", "data":data}))
     
 def vaultGet(request):
   if request.method != "POST":
@@ -133,10 +133,10 @@ def vaultNew(request):
           except:
             data["url"] = ""
           dataPasswords["passwordIndex"] += 1
-          dataPasswords["passwords"].append({"id":dataPasswords["passwordIndex"], "name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"]})
+          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"], "id":dataPasswords["passwordIndex"]})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-            db.find_one_and_update("user-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
+            db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
 
@@ -170,7 +170,7 @@ def vaultEdit(request):
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
               
               return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that Name"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that ID"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
 
     except Exception as e:
