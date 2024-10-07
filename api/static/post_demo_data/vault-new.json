@@ -2,5 +2,7 @@
   "email":"test1@gmail.com",
   "sessionId":"",
   "name":"Instagram",
-  "password":"InstaPass"
+  "username":"Insta User",
+  "password":"InstaPass",
+  "url":""
 }

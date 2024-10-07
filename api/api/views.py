@@ -127,7 +127,11 @@ def vaultNew(request):
           passwordEncrypt = encryptor.encrypt(account["salt"], data["password"], account["passwordHash"])
 
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          dataPasswords["passwords"].append({"name":data["name"], "password":passwordEncrypt})
+          try:
+            url = data["url"]
+          except:
+            data["url"] = ""
+          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"]})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
