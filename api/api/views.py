@@ -121,7 +121,8 @@ def vaultNew(request):
           try:
             url = data["url"]
             url.removeprefix("https://")
-            url += "https://"
+            url = "https://" + url
+            data["url"] = url
           except:
             data["url"] = ""
           dataPasswords["passwordIndex"] += 1
