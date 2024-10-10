@@ -1,11 +1,7 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
-import json
-import swiftcrypt
-import secrets
-import string
+import json, swiftcrypt, secrets, string
 from .settings import db, ConfigObj
-from . import encryptor
 
 def validateSigninData(email, password):
   account = db.find_one("users", {"email":email})
@@ -55,7 +51,7 @@ def signin(request):
           del account["sessionIds"][0]
 
         if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId}))
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"]}))
         
       return(JsonResponse(error))
     except Exception as e:
@@ -101,10 +97,6 @@ def vaultGet(request):
       if account != None:
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          for value in dataPasswords["passwords"]:
-            passwordDecrypt = encryptor.decryptor(account["salt"], account["passwordHash"], value["password"])
-            value["password"] = passwordDecrypt
-
           return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
@@ -125,15 +117,13 @@ def vaultNew(request):
       
       if account != None:
         if validateSession(account, data):
-          passwordEncrypt = encryptor.encrypt(account["salt"], data["password"], account["passwordHash"])
-
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           try:
             url = data["url"]
           except:
             data["url"] = ""
           dataPasswords["passwordIndex"] += 1
-          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":passwordEncrypt, "url":data["url"], "id":dataPasswords["passwordIndex"]})
+          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "id":dataPasswords["passwordIndex"]})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
             db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
@@ -161,8 +151,7 @@ def vaultEdit(request):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           for entry in dataPasswords["passwords"]:
             if entry["id"] == data["id"]:
-              newPasswordEncrypt = encryptor.encrypt(account["salt"], data["newPassword"], account["passwordHash"])
-              entry["password"] = newPasswordEncrypt
+              entry["password"] = data["newPassword"]
               entry["name"] = data["newName"]
               entry["username"] = data["newUsername"]
               entry["url"] = data["newUrl"]
