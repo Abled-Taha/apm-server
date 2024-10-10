@@ -20,4 +20,3 @@
 
 ### Todo
 1. Add ability to change user credentials
-2. Find a better way to encrypt passwords without using master password hash
