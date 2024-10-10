@@ -120,6 +120,8 @@ def vaultNew(request):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
           try:
             url = data["url"]
+            url.removeprefix("https://")
+            url += "https://"
           except:
             data["url"] = ""
           dataPasswords["passwordIndex"] += 1
