@@ -5,7 +5,7 @@ class DatabaseHandler(object):
     if db_srv == "False":
       self.client = pymongo.MongoClient(f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}/?authSource={db_name}")
     else:
-      self.client = pymongo.MongoClient(f"mongodb+srv://{db_username}:{db_password}@{db_host}/?authSource={db_name}")
+      self.client = pymongo.MongoClient(f"mongodb+srv://{db_username}:{db_password}@{db_host}")
     self.db = self.client[f"{db_name}"]
     self.collectionUsers = self.db["users"]
     self.collectionUsersData = self.db["users-data"]
