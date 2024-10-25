@@ -1,8 +1,11 @@
 import pymongo
 
 class DatabaseHandler(object):
-  def __init__(self, db_name, db_host, db_port, db_username, db_password):
-    self.client = pymongo.MongoClient(f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}/?authSource={db_name}")
+  def __init__(self, db_name, db_host, db_port, db_username, db_password, db_srv):
+    if db_srv == "False":
+      self.client = pymongo.MongoClient(f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}/?authSource={db_name}")
+    else:
+      self.client = pymongo.MongoClient(f"mongodb+srv://{db_username}:{db_password}@{db_host}/?authSource={db_name}")
     self.db = self.client[f"{db_name}"]
     self.collectionUsers = self.db["users"]
     self.collectionUsersData = self.db["users-data"]

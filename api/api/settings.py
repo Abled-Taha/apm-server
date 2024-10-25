@@ -18,7 +18,7 @@ runserver.default_port = ConfigObj.server_port
 
 # Setting Up Database
 global db
-db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password)
+db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password, ConfigObj.db_srv)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

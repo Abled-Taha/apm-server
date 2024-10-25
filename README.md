@@ -9,14 +9,13 @@
 1. [Create a database](https://www.w3schools.com/mongodb/mongodb_mongosh_create_database.php) named "apm"
 2. [Create a user with access of reading and writing to the database](https://www.geeksforgeeks.org/create-user-and-add-role-in-mongodb/)
 3. Clone the repository
-4. Open a terminal in "./apm-server"
-5. Run ```pip install -r ./requirements.txt```
-6. Run ```cd ./api```
-7. Run ```python manage.py collectstatic```
-8. Run ```cd ..```
-9. Run ```python main.py```
-10. Open http://127.0.0.1:8080/docs and follow the recommendations there to securely setup the API
-11. Restart the API
+4. Open the directory
+5. Make ".env" file
+6. Set all the variables in that file from the "config.json" file
+7. Open a terminal in "./apm-server"
+8. Run ```pip install -r ./requirements.txt ; cd ./api ; python manage.py collectstatic ; cd .. ; python main.py```
+9. Open http://127.0.0.1:8080/docs and follow the recommendations there to securely setup the API
+10. Restart the API
 
 ### Todo
 1. Add ability to change user credentials
