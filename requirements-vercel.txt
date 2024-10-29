@@ -19,7 +19,6 @@ pymongo==4.6.2
 pyotp==2.9.0
 pypng==0.20220715.0
 python-dotenv==1.0.1
-pywin32-ctypes==0.2.3
 qrcode==7.4.2
 requests==2.31.0
 SecretStorage==3.3.3
@@ -29,5 +28,4 @@ swiftcrypt==0.3.5.11
 typing_extensions==4.10.0
 tzdata==2024.2
 urllib3==2.2.1
-waitress==3.0.0
 wheel==0.41.2
