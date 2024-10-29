@@ -1,1 +1,1 @@
-pip install -r requirements-vercel.txt
+pip3 install -r requirements-vercel.txt
