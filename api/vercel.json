@@ -4,7 +4,8 @@
       "src": "api/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "runtime": "python3.12"
+        "runtime": "python3.12",
+        "installCommand": "./build_files.sh"
       }
     }
   ],
