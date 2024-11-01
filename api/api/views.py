@@ -51,7 +51,7 @@ def signin(request):
           del account["sessionIds"][0]
 
         if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"]}))
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"], "username":account["username"]}))
         
       return(JsonResponse(error))
     except Exception as e:
