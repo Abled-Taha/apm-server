@@ -16,5 +16,7 @@
   "password_max_length":20,
   "sessionId_length":16,
   "salt_length":16,
-  "max_sessions":10
+  "max_sessions":10,
+  "pp_width":150,
+  "pp_height":150
 }

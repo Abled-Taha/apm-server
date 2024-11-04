@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
-import json, swiftcrypt, secrets, string
-from .settings import db, ConfigObj
+from PIL import Image
+from io import BytesIO
+import json, swiftcrypt, secrets, string, base64
+from .settings import db, ConfigObj, ImageHandlerObj
 
 def validateSigninData(email, password):
   account = db.find_one("users", {"email":email})
@@ -262,6 +264,53 @@ def sessionDelete(request):
 
               return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+    
+def ppGet(request):
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+  
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+
+      if account != None:
+        if validateSession(account, data):
+          imagePath = ImageHandlerObj.getImagePath(data["username"])
+          with open(imagePath, "rb") as image_file:
+            image64 = base64.standard_b64encode(image_file.read())
+            image64 = f"{image64}"
+          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "pp":image64}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+    
+def ppNew(request):
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+  
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+
+      if account != None:
+        if validateSession(account, data):
+          image = base64.b64decode(data["image"].removeprefix("b'").removesuffix("'").encode())
+
+          success = ImageHandlerObj.updatedImage(data["username"], image)
+          if success:
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Internal Error"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       

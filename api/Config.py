@@ -38,3 +38,5 @@ class Config(object):
     self.sessionId_length = int(os.getenv("sessionId_length"))
     self.salt_length = int(os.getenv("salt_length"))
     self.max_sessions = int(os.getenv("max_sessions"))
+    self.pp_width = int(os.getenv("pp_width"))
+    self.pp_height = int(os.getenv("pp_height"))

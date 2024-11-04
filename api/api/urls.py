@@ -15,4 +15,6 @@ urlpatterns = [
     path('session-get/', views.sessionGet, name="Session Get"),
     path('session-edit/', views.sessionEdit, name="Session Edit"),
     path('session-delete/', views.sessionDelete, name="Session Delete"),
+    path('pp-get/', views.ppGet, name="PP Get"),
+    path('pp-new/', views.ppNew, name="PP New"),
 ]

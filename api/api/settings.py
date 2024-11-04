@@ -2,6 +2,7 @@ from pathlib import Path
 from django.core.management.commands.runserver import Command as runserver
 from Config import Config as ConfigClass
 from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
+from ImageHandler import ImageHandler as ImageHandlerClass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Directory where 'manage.py' is located.
@@ -11,6 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 global ConfigObj
 ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
+
+# Setting up Image Handler
+global ImageHandlerObj
+ImageHandlerObj = ImageHandlerClass(BASE_DIR, ConfigObj.pp_width, ConfigObj.pp_height)
 
 # Changing the server port
 runserver.default_addr = ConfigObj.server_host
