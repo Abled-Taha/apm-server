@@ -14,7 +14,7 @@
 6. Set all the variables in that file from the "config.json" file
 7. Open a terminal in "./apm-server"
 8. Run ```pip install -r ./requirements.txt ; cd ./api ; python manage.py collectstatic ; cd .. ; python main.py```
-9. Open http://127.0.0.1:8080/docs and follow the recommendations there to securely setup the API
+9. Open http://127.0.0.1:8000/docs and follow the recommendations there to securely setup the API
 10. Restart the API
 
 ### Todo
