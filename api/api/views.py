@@ -128,12 +128,14 @@ def vaultNew(request):
             data["password"] = ""
           if data.get("url") == None:
             data["url"] = ""
+          if data.get("note") == None:
+            data["note"] = ""
             
           data["url"] = data["url"].removeprefix("https://")
           data["url"] = "https://" + data["url"]
 
           dataPasswords["passwordIndex"] += 1
-          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "id":dataPasswords["passwordIndex"]})
+          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "note":data["note"], "id":dataPasswords["passwordIndex"]})
             
           if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
             db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
@@ -159,12 +161,28 @@ def vaultEdit(request):
       if account != None:
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
+
+          if data.get("newName") == None:
+            data["newName"] = ""
+          if data.get("newUsername") == None:
+            data["newUsername"] = ""
+          if data.get("newPassword") == None:
+            data["newPassword"] = ""
+          if data.get("newUrl") == None:
+            data["newUrl"] = ""
+          if data.get("newNote") == None:
+            data["newNote"] = ""
+            
+          data["newUrl"] = data["newUrl"].removeprefix("https://")
+          data["newUrl"] = "https://" + data["newUrl"]
+
           for entry in dataPasswords["passwords"]:
             if entry["id"] == data["id"]:
               entry["password"] = data["newPassword"]
               entry["name"] = data["newName"]
               entry["username"] = data["newUsername"]
               entry["url"] = data["newUrl"]
+              entry["note"] = data["newNote"]
               if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
               

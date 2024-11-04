@@ -4,5 +4,6 @@
   "name":"Instagram",
   "username":"Insta User",
   "password":"InstaPass",
-  "url":""
+  "url":"",
+  "note":"This is a note"
 }
