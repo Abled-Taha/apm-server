@@ -3,6 +3,3 @@ static_root
 db.sqlite3
 apm-server
 .env
-users-data/*
-!users-data/default
-!users-data/default/*
