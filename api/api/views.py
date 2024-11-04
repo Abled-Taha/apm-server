@@ -120,13 +120,18 @@ def vaultNew(request):
       if account != None:
         if validateSession(account, data):
           dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          try:
-            url = data["url"]
-            url = url.removeprefix("https://")
-            url = "https://" + url
-            data["url"] = url
-          except:
+          if data.get("name") == None:
+            data["name"] = ""
+          if data.get("username") == None:
+            data["username"] = ""
+          if data.get("password") == None:
+            data["password"] = ""
+          if data.get("url") == None:
             data["url"] = ""
+            
+          data["url"] = data["url"].removeprefix("https://")
+          data["url"] = "https://" + data["url"]
+
           dataPasswords["passwordIndex"] += 1
           dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "id":dataPasswords["passwordIndex"]})
             
