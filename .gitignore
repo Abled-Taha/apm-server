@@ -3,3 +3,4 @@ static_root
 db.sqlite3
 apm-server
 .env
+logs.txt

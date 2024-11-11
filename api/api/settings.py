@@ -13,6 +13,11 @@ global ConfigObj
 ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
 
+# Setting up Log Handler
+from LogHandler import LogHandler as LogHandlerClass
+global LogHandlerObj
+LogHandlerObj = LogHandlerClass(BASE_DIR)
+
 # Setting up Image Handler
 global ImageHandlerObj
 ImageHandlerObj = ImageHandlerClass(BASE_DIR, ConfigObj.pp_width, ConfigObj.pp_height)

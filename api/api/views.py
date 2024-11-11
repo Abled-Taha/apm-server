@@ -1,7 +1,16 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
 import json, swiftcrypt, secrets, string, base64
-from .settings import db, ConfigObj, ImageHandlerObj
+from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj
+
+def get_client_ip(request):
+    # Later needs to be changed with API Tokens
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def validateSigninData(email, password):
   account = db.find_one("users", {"email":email})
@@ -51,11 +60,14 @@ def signin(request):
           del account["sessionIds"][0]
 
         if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
+          LogHandlerObj.write(f"Signin | OK | {data['email']} | {get_client_ip(request)}")
           return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"], "username":account["username"]}))
         
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {get_client_ip(request)} | {error["errorMessage"]}")
       return(JsonResponse(error))
     except Exception as e:
       print(e)
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Form")
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def signup(request):
@@ -78,11 +90,14 @@ def signup(request):
         if db.insert_one("users", dataAccount) != None:
           dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
           db.insert_one("users-data", dataPasswords)
+          LogHandlerObj.write(f"Signup | OK | {data['email']} | {get_client_ip(request)}")
           return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
         
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {get_client_ip(request)} | {error["errorMessage"]}")
       return(JsonResponse(error))
     except Exception as e:
       print(e)
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Form")
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form", "data":data}))
     
 def vaultGet(request):
@@ -281,11 +296,16 @@ def sessionDelete(request):
               account["sessionIds"].remove(entry)
 
               if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
+                LogHandlerObj.write(f"Logout | OK | {data['email']} | {get_client_ip(request)}")
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
 
+              LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | Error in Database")
               return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+          LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | No Entry with that name")
           return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+        LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Session Id")
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | No Account exists with that Email")
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       
     except Exception as e:
