@@ -9,7 +9,10 @@ class LogHandler(object):
       return f.read()
 
   def write(self, data):
+    if data.get("apiToken") == None or data.get("apiToken") == False:
+      data["apiToken"] = ""
+    
     with open(f'{self.BASE_DIR}/logs.txt', 'a') as f:
-      f.write(f"{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")} | {data}")
+      f.write(f"{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")} | {data} | {data["apiToken"]}")
       f.write('\n')
     return True

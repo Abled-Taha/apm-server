@@ -3,15 +3,6 @@ from django.http.response import HttpResponse, JsonResponse
 import json, swiftcrypt, secrets, string, base64
 from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj
 
-def get_client_ip(request):
-    # Later needs to be changed with API Tokens
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
 def validateSigninData(email, password):
   account = db.find_one("users", {"email":email})
   if account != None:
@@ -41,33 +32,43 @@ def validateSession(account, data):
       return(True)
   return(False)
 
+def validateApiToken(token):
+  if token == False or token == None:
+    return(False)
+  elif db.find_one("api-tokens", {"apiToken":token}) != None:
+    return(True)
+  return(False)
+
 def signin(request):
   if request.method != "POST":
     return(HttpResponse("Method not Allowed."))
   else:
     try:
       data = json.loads(request.body)
-      isValid, error, account = validateSigninData(data["email"], data["password"])
-      
-      if isValid:
-        sessionId = generateSessionId()
-        try:
-          sessionName = data["sessionName"]
-        except:
-          sessionName = ""
-        account["sessionIds"].append({"name":sessionName, "sessionId":sessionId})
-        if len(account["sessionIds"]) > ConfigObj.max_sessions:
-          del account["sessionIds"][0]
-
-        if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
-          LogHandlerObj.write(f"Signin | OK | {data['email']} | {get_client_ip(request)}")
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"], "username":account["username"]}))
+      if validateApiToken(data.get("apiToken")):
+        isValid, error, account = validateSigninData(data["email"], data["password"])
         
-      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {get_client_ip(request)} | {error["errorMessage"]}")
-      return(JsonResponse(error))
+        if isValid:
+          sessionId = generateSessionId()
+          try:
+            sessionName = data["sessionName"]
+          except:
+            sessionName = ""
+          account["sessionIds"].append({"name":sessionName, "sessionId":sessionId})
+          if len(account["sessionIds"]) > ConfigObj.max_sessions:
+            del account["sessionIds"][0]
+
+          if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
+            LogHandlerObj.write(f"Signin | OK | {data['email']}")
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"], "username":account["username"]}))
+          
+        LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {error["errorMessage"]}")
+        return(JsonResponse(error))
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Api Token")
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     except Exception as e:
       print(e)
-      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Form")
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Form")
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def signup(request):
@@ -77,27 +78,30 @@ def signup(request):
   else:
     try:
       data = json.loads(request.body)
-      isValid, error = validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
-      
-      if isValid:
-        dataAccount = {}
-        dataAccount["email"] = data["email"]
-        dataAccount["username"] = data["username"]
-        dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
-        dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(data["password"], dataAccount["salt"], "sha256")
-        dataAccount["sessionIds"] = []
+      if validateApiToken(data.get("apiToken")):
+        isValid, error = validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
         
-        if db.insert_one("users", dataAccount) != None:
-          dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
-          db.insert_one("users-data", dataPasswords)
-          LogHandlerObj.write(f"Signup | OK | {data['email']} | {get_client_ip(request)}")
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-        
-      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {get_client_ip(request)} | {error["errorMessage"]}")
-      return(JsonResponse(error))
+        if isValid:
+          dataAccount = {}
+          dataAccount["email"] = data["email"]
+          dataAccount["username"] = data["username"]
+          dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
+          dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(data["password"], dataAccount["salt"], "sha256")
+          dataAccount["sessionIds"] = []
+          
+          if db.insert_one("users", dataAccount) != None:
+            dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
+            db.insert_one("users-data", dataPasswords)
+            LogHandlerObj.write(f"Signup | OK | {data['email']}")
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+          
+        LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {error["errorMessage"]}")
+        return(JsonResponse(error))
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Api Token")
+      return (JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     except Exception as e:
       print(e)
-      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Form")
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Form")
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form", "data":data}))
     
 def vaultGet(request):
@@ -107,14 +111,16 @@ def vaultGet(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+        if account != None:
+          if validateSession(account, data):
+            dataPasswords = db.find_one("users-data", {"email":account["email"]})
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     
     except Exception as e:
       print("exception")
@@ -128,35 +134,37 @@ def vaultNew(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
-      
-      if account != None:
-        if validateSession(account, data):
-          dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          if data.get("name") == None:
-            data["name"] = ""
-          if data.get("username") == None:
-            data["username"] = ""
-          if data.get("password") == None:
-            data["password"] = ""
-          if data.get("url") == None:
-            data["url"] = ""
-          if data.get("note") == None:
-            data["note"] = ""
-            
-          data["url"] = data["url"].removeprefix("https://")
-          data["url"] = "https://" + data["url"]
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
+        
+        if account != None:
+          if validateSession(account, data):
+            dataPasswords = db.find_one("users-data", {"email":account["email"]})
+            if data.get("name") == None:
+              data["name"] = ""
+            if data.get("username") == None:
+              data["username"] = ""
+            if data.get("password") == None:
+              data["password"] = ""
+            if data.get("url") == None:
+              data["url"] = ""
+            if data.get("note") == None:
+              data["note"] = ""
+              
+            data["url"] = data["url"].removeprefix("https://")
+            data["url"] = "https://" + data["url"]
 
-          dataPasswords["passwordIndex"] += 1
-          dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "note":data["note"], "id":dataPasswords["passwordIndex"]})
-            
-          if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-            db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
-            return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            dataPasswords["passwordIndex"] += 1
+            dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "note":data["note"], "id":dataPasswords["passwordIndex"]})
+              
+            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+              db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
+              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
 
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
@@ -169,39 +177,42 @@ def vaultEdit(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
-      
-      if account != None:
-        if validateSession(account, data):
-          dataPasswords = db.find_one("users-data", {"email":account["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
+        
+        if account != None:
+          if validateSession(account, data):
+            dataPasswords = db.find_one("users-data", {"email":account["email"]})
 
-          if data.get("newName") == None:
-            data["newName"] = ""
-          if data.get("newUsername") == None:
-            data["newUsername"] = ""
-          if data.get("newPassword") == None:
-            data["newPassword"] = ""
-          if data.get("newUrl") == None:
-            data["newUrl"] = ""
-          if data.get("newNote") == None:
-            data["newNote"] = ""
-            
-          data["newUrl"] = data["newUrl"].removeprefix("https://")
-          data["newUrl"] = "https://" + data["newUrl"]
-
-          for entry in dataPasswords["passwords"]:
-            if entry["id"] == data["id"]:
-              entry["password"] = data["newPassword"]
-              entry["name"] = data["newName"]
-              entry["username"] = data["newUsername"]
-              entry["url"] = data["newUrl"]
-              entry["note"] = data["newNote"]
-              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            if data.get("newName") == None:
+              data["newName"] = ""
+            if data.get("newUsername") == None:
+              data["newUsername"] = ""
+            if data.get("newPassword") == None:
+              data["newPassword"] = ""
+            if data.get("newUrl") == None:
+              data["newUrl"] = ""
+            if data.get("newNote") == None:
+              data["newNote"] = ""
               
-              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that ID"}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+            data["newUrl"] = data["newUrl"].removeprefix("https://")
+            data["newUrl"] = "https://" + data["newUrl"]
+
+            for entry in dataPasswords["passwords"]:
+              if entry["id"] == data["id"]:
+                entry["password"] = data["newPassword"]
+                entry["name"] = data["newName"]
+                entry["username"] = data["newUsername"]
+                entry["url"] = data["newUrl"]
+                entry["note"] = data["newNote"]
+                if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+                
+                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that ID"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
 
     except Exception as e:
       print(e)
@@ -214,22 +225,24 @@ def vaultDelete(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          dataPasswords = db.find_one("users-data", {"email":account["email"]})
-          for entry in dataPasswords["passwords"]:
-            if entry["id"] == data["id"]:
-              dataPasswords["passwords"].remove(entry)
+        if account != None:
+          if validateSession(account, data):
+            dataPasswords = db.find_one("users-data", {"email":account["email"]})
+            for entry in dataPasswords["passwords"]:
+              if entry["id"] == data["id"]:
+                dataPasswords["passwords"].remove(entry)
 
-              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+                if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
 
-              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
@@ -242,13 +255,15 @@ def sessionGet(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionIds":account["sessionIds"]}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+        if account != None:
+          if validateSession(account, data):
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionIds":account["sessionIds"]}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     
     except Exception as e:
       print("exception")
@@ -262,19 +277,22 @@ def sessionEdit(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
-      
-      if account != None:
-        if validateSession(account, data):
-          for entry in account["sessionIds"]:
-            if entry["sessionId"] == data["sessionIdW"]:
-              entry["name"] = data["newName"]
-              if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
-                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-              
-              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that Name"}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
+        
+        if account != None:
+          if validateSession(account, data):
+            for entry in account["sessionIds"]:
+              if entry["sessionId"] == data["sessionIdW"]:
+                entry["name"] = data["newName"]
+                if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
+                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+                
+                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that Name"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
 
     except Exception as e:
       print(e)
@@ -287,26 +305,28 @@ def sessionDelete(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          for entry in account["sessionIds"]:
-            if entry["sessionId"] == data["sessionIdW"]:
-              account["sessionIds"].remove(entry)
+        if account != None:
+          if validateSession(account, data):
+            for entry in account["sessionIds"]:
+              if entry["sessionId"] == data["sessionIdW"]:
+                account["sessionIds"].remove(entry)
 
-              if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
-                LogHandlerObj.write(f"Logout | OK | {data['email']} | {get_client_ip(request)}")
-                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+                if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
+                  LogHandlerObj.write(f"Logout | OK | {data['email']}")
+                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
 
-              LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | Error in Database")
-              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | No Entry with that name")
-          return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
-        LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | Invalid Session Id")
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | {get_client_ip(request)} | No Account exists with that Email")
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+                LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Error in Database")
+                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Entry with that name")
+            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+          LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Invalid Session Id")
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Account exists with that Email")
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
@@ -319,17 +339,19 @@ def ppGet(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          imagePath = ImageHandlerObj.getImagePath(data["username"])
-          with open(imagePath, "rb") as image_file:
-            image64 = base64.standard_b64encode(image_file.read())
-            image64 = f"{image64}"
-          return(JsonResponse({"errorCode":0, "errorMessage":"Success", "pp":image64}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+        if account != None:
+          if validateSession(account, data):
+            imagePath = ImageHandlerObj.getImagePath(data["username"])
+            with open(imagePath, "rb") as image_file:
+              image64 = base64.standard_b64encode(image_file.read())
+              image64 = f"{image64}"
+            return(JsonResponse({"errorCode":0, "errorMessage":"Success", "pp":image64}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
@@ -342,18 +364,20 @@ def ppNew(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          image = base64.b64decode(data["image"].removeprefix("b'").removesuffix("'").encode())
+        if account != None:
+          if validateSession(account, data):
+            image = base64.b64decode(data["image"].removeprefix("b'").removesuffix("'").encode())
 
-          success = ImageHandlerObj.updatedImage(data["username"], image)
-          if success:
-            return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"Internal Error"}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+            success = ImageHandlerObj.updatedImage(data["username"], image)
+            if success:
+              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Internal Error"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
@@ -366,23 +390,25 @@ def vaultImport(request):
   else:
     try:
       data = json.loads(request.body)
-      account = db.find_one("users", {"email":data["email"]})
-      accountData = db.find_one("users-data", {"email":account["email"]})
+      if validateApiToken(data.get("apiToken")):
+        account = db.find_one("users", {"email":data["email"]})
+        accountData = db.find_one("users-data", {"email":account["email"]})
 
-      if account != None:
-        if validateSession(account, data):
-          passwordIndex = accountData["passwordIndex"]
-          for entry in data["items"]:
-            entry["id"] = passwordIndex + 1
-            passwordIndex += 1
+        if account != None:
+          if validateSession(account, data):
+            passwordIndex = accountData["passwordIndex"]
+            for entry in data["items"]:
+              entry["id"] = passwordIndex + 1
+              passwordIndex += 1
 
-          passwords = accountData["passwords"] + data["items"]
-          if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", passwords) != None:
-            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", passwordIndex) != None:
-              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+            passwords = accountData["passwords"] + data["items"]
+            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", passwords) != None:
+              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", passwordIndex) != None:
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
     except Exception as e:
       print(e)
