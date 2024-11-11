@@ -1,7 +1,5 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
-from PIL import Image
-from io import BytesIO
 import json, swiftcrypt, secrets, string, base64
 from .settings import db, ConfigObj, ImageHandlerObj
 
@@ -334,6 +332,35 @@ def ppNew(request):
           if success:
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Internal Error"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+      return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+      
+    except Exception as e:
+      print(e)
+      return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+
+def vaultImport(request):
+  if request.method != "POST":
+    return(HttpResponse("Method not Allowed."))
+  
+  else:
+    try:
+      data = json.loads(request.body)
+      account = db.find_one("users", {"email":data["email"]})
+      accountData = db.find_one("users-data", {"email":account["email"]})
+
+      if account != None:
+        if validateSession(account, data):
+          passwordIndex = accountData["passwordIndex"]
+          for entry in data["items"]:
+            entry["id"] = passwordIndex + 1
+            passwordIndex += 1
+
+          passwords = accountData["passwords"] + data["items"]
+          if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", passwords) != None:
+            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", passwordIndex) != None:
+              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       
