@@ -1,43 +1,10 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
-import json, swiftcrypt, secrets, string, base64
+import json, swiftcrypt, base64
 from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj
+from .Functions import Functions
 
-def validateSigninData(email, password):
-  account = db.find_one("users", {"email":email})
-  if account != None:
-    if swiftcrypt.Checker().verify_password(password, account["passwordHash"], account["salt"], "sha256"):
-      return(True, {"errorCode":0, "errorMessage":"Success"}, account)
-    return(False, {"errorCode":1, "errorMessage":"Incorrect Password"}, account)
-  return(False, {"errorCode":1, "errorMessage":"No Account exists with that Email."}, account)
-
-def generateSessionId():
-  characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
-  sessionId = ''.join(secrets.choice(characters) for i in range(ConfigObj.sessionId_length))
-  return(sessionId)
-
-def validateSignupData(email, username, password, rePassword):
-  if db.find_one("users", {"email":email}) == None:
-    if len(username) >= ConfigObj.username_min_length and len(username) <= ConfigObj.username_max_length and username.isalnum():
-      if password == rePassword and len(password) >= ConfigObj.password_min_length and len(password) <= ConfigObj.password_max_length:
-        return(True, {"errorCode":0, "errorMessage":"Success"})
-      return(False, {"errorCode":1, "errorMessage":f"The passwords must match and must have more than {ConfigObj.password_min_length} and less than {ConfigObj.password_max_length} characters"})
-    return(False, {"errorCode":1, "errorMessage":f"The username must have more than {ConfigObj.username_min_length} and less than {ConfigObj.username_max_length} characters"})
-  return(False, {"errorCode":1, "errorMessage":"User already exists with this email"})
-
-
-def validateSession(account, data):
-  for entry in account["sessionIds"]:
-    if entry["sessionId"] == data["sessionId"]:
-      return(True)
-  return(False)
-
-def validateApiToken(token):
-  if token == False or token == None:
-    return(False)
-  elif db.find_one("api-tokens", {"apiToken":token}) != None:
-    return(True)
-  return(False)
+functions = Functions(db, ConfigObj)
 
 def signin(request):
   if request.method != "POST":
@@ -45,11 +12,11 @@ def signin(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
-        isValid, error, account = validateSigninData(data["email"], data["password"])
+      if functions.validateApiToken(data.get("apiToken")):
+        isValid, error, account = functions.validateSigninData(data["email"], data["password"])
         
         if isValid:
-          sessionId = generateSessionId()
+          sessionId = functions.generateSessionId()
           try:
             sessionName = data["sessionName"]
           except:
@@ -59,16 +26,16 @@ def signin(request):
             del account["sessionIds"][0]
 
           if db.find_one_and_update("users", {"email":data["email"]}, "sessionIds", account["sessionIds"]) != None:
-            LogHandlerObj.write(f"Signin | OK | {data['email']}")
+            LogHandlerObj.write(f"Signin | OK | {data['email']}", data)
             return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionId":sessionId, "salt":account["salt"], "username":account["username"]}))
           
-        LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {error["errorMessage"]}")
+        LogHandlerObj.write(f"Signin | FAILED | {data['email']} | {error["errorMessage"]}", data)
         return(JsonResponse(error))
-      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Api Token")
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Api Token", data)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     except Exception as e:
       print(e)
-      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Form")
+      LogHandlerObj.write(f"Signin | FAILED | {data['email']} | Invalid Form", data)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
 
 def signup(request):
@@ -78,8 +45,8 @@ def signup(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
-        isValid, error = validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
+      if functions.validateApiToken(data.get("apiToken")):
+        isValid, error = functions.validateSignupData(data["email"], data["username"], data["password"], data["rePassword"])
         
         if isValid:
           dataAccount = {}
@@ -92,16 +59,16 @@ def signup(request):
           if db.insert_one("users", dataAccount) != None:
             dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
             db.insert_one("users-data", dataPasswords)
-            LogHandlerObj.write(f"Signup | OK | {data['email']}")
+            LogHandlerObj.write(f"Signup | OK | {data['email']}", data)
             return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
           
-        LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {error["errorMessage"]}")
+        LogHandlerObj.write(f"Signup | FAILED | {data['email']} | {error["errorMessage"]}", data)
         return(JsonResponse(error))
-      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Api Token")
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Api Token", data)
       return (JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
     except Exception as e:
       print(e)
-      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Form")
+      LogHandlerObj.write(f"Signup | FAILED | {data['email']} | Invalid Form", data)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form", "data":data}))
     
 def vaultGet(request):
@@ -111,11 +78,11 @@ def vaultGet(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
             return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
@@ -134,11 +101,11 @@ def vaultNew(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
         
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
             if data.get("name") == None:
               data["name"] = ""
@@ -177,11 +144,11 @@ def vaultEdit(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
         
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
 
             if data.get("newName") == None:
@@ -225,11 +192,11 @@ def vaultDelete(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
             for entry in dataPasswords["passwords"]:
               if entry["id"] == data["id"]:
@@ -255,11 +222,11 @@ def sessionGet(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             return(JsonResponse({"errorCode":0, "errorMessage":"Success", "sessionIds":account["sessionIds"]}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
@@ -277,11 +244,11 @@ def sessionEdit(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
         
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             for entry in account["sessionIds"]:
               if entry["sessionId"] == data["sessionIdW"]:
                 entry["name"] = data["newName"]
@@ -305,26 +272,26 @@ def sessionDelete(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             for entry in account["sessionIds"]:
               if entry["sessionId"] == data["sessionIdW"]:
                 account["sessionIds"].remove(entry)
 
                 if db.find_one_and_update("users", {"email":account["email"]}, "sessionIds", account["sessionIds"]) != None:
-                  LogHandlerObj.write(f"Logout | OK | {data['email']}")
+                  LogHandlerObj.write(f"Logout | OK | {data['email']}", data)
                   return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
 
-                LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Error in Database")
+                LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Error in Database", data)
                 return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-            LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Entry with that name")
+            LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Entry with that name", data)
             return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
-          LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Invalid Session Id")
+          LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | Invalid Session Id", data)
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
-        LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Account exists with that Email")
+        LogHandlerObj.write(f"SessionDelete | FAILED | {data['email']} | No Account exists with that Email", data)
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
@@ -339,11 +306,11 @@ def ppGet(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             imagePath = ImageHandlerObj.getImagePath(data["username"])
             with open(imagePath, "rb") as image_file:
               image64 = base64.standard_b64encode(image_file.read())
@@ -364,11 +331,11 @@ def ppNew(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             image = base64.b64decode(data["image"].removeprefix("b'").removesuffix("'").encode())
 
             success = ImageHandlerObj.updatedImage(data["username"], image)
@@ -390,12 +357,12 @@ def vaultImport(request):
   else:
     try:
       data = json.loads(request.body)
-      if validateApiToken(data.get("apiToken")):
+      if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
         accountData = db.find_one("users-data", {"email":account["email"]})
 
         if account != None:
-          if validateSession(account, data):
+          if functions.validateSession(account, data):
             passwordIndex = accountData["passwordIndex"]
             for entry in data["items"]:
               entry["id"] = passwordIndex + 1
