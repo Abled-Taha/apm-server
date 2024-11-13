@@ -1,11 +1,23 @@
 import string, secrets, swiftcrypt
+from typing import List, Dict, Tuple, Any
 
 class Functions(object):
   def __init__(self, db, ConfigObj):
     self.ConfigObj = ConfigObj
     self.db = db
     
-  def validateSigninData(self, email, password):
+  def validateSigninData(self, email: str, password: str) -> Tuple[bool, Dict[str, Any], Dict[str, Any]]:
+    """
+    Validates the Signin Data of a User.
+
+    Args:
+    email (str): The Email of the User.
+    password (str): The Password of the User.
+
+    Returns:
+    Tuple[bool, Dict[str, Any], Dict[str, Any]]: A tuple containing a boolean indicating if the signin was valid, a dictionary containing an errorCode and errorMessage, and a dictionary containing the User's data.
+    """
+
     account = self.db.find_one("users", {"email":email})
     if account != None:
       if swiftcrypt.Checker().verify_password(password, account["passwordHash"], account["salt"], "sha256"):
@@ -13,12 +25,32 @@ class Functions(object):
       return(False, {"errorCode":1, "errorMessage":"Incorrect Password"}, account)
     return(False, {"errorCode":1, "errorMessage":"No Account exists with that Email."}, account)
 
-  def generateSessionId(self):
+  def generateSessionId(self) -> str:
+    """
+    Generates a new Session ID for a User.
+
+    Returns:
+    str: A new Session ID for a User.
+    """
+
     characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
     sessionId = ''.join(secrets.choice(characters) for i in range(self.ConfigObj.sessionId_length))
     return(sessionId)
 
-  def validateSignupData(self, email, username, password, rePassword):
+  def validateSignupData(self, email: str, username: str, password: str, rePassword: str) -> Tuple[bool, Dict[str, Any]]:
+    """
+    Validates the Signup Data of a User.
+
+    Args:
+    email (str): The Email of the User.
+    username (str): The Username of the User.
+    password (str): The Password of the User.
+    rePassword (str): The Re-Password of the User.
+
+    Returns:
+    Tuple[bool, Dict[str, Any]]: A tuple containing a boolean indicating if the signup was valid, and a dictionary containing an errorCode and errorMessage.
+    """
+
     if self.db.find_one("users", {"email":email}) == None:
       if len(username) >= self.ConfigObj.username_min_length and len(username) <= self.ConfigObj.username_max_length and username.isalnum():
         if password == rePassword and len(password) >= self.ConfigObj.password_min_length and len(password) <= self.ConfigObj.password_max_length:
@@ -28,13 +60,34 @@ class Functions(object):
     return(False, {"errorCode":1, "errorMessage":"User already exists with this email"})
 
 
-  def validateSession(self, account, data):
+  def validateSession(self, account: Dict[str, Any], data: Dict[str, Any]) -> bool:
+    """
+    Validates the Session ID of a User.
+
+    Args:
+    account (Dict[str, Any]): The User's data.
+    data (Dict[str, Any]): The data containing the Session ID to validate.
+
+    Returns:
+    bool: True if the Session ID is valid, False otherwise.
+    """
+
     for entry in account["sessionIds"]:
       if entry["sessionId"] == data["sessionId"]:
         return(True)
     return(False)
 
-  def validateApiToken(self, token):
+  def validateApiToken(self, token: str) -> bool:
+    """
+    Validates the API Token of a User.
+
+    Args:
+    token (str): The API Token to validate.
+
+    Returns:
+    bool: True if the API Token is valid, False otherwise.
+    """
+
     if token == False or token == None:
       return(False)
     elif self.db.find_one("api-tokens", {"apiToken":token}) != None:

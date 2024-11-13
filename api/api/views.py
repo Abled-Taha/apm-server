@@ -84,7 +84,9 @@ def vaultGet(request):
         if account != None:
           if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
-            return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
+            if dataPasswords != None:
+              return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
@@ -107,26 +109,28 @@ def vaultNew(request):
         if account != None:
           if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
-            if data.get("name") == None:
-              data["name"] = ""
-            if data.get("username") == None:
-              data["username"] = ""
-            if data.get("password") == None:
-              data["password"] = ""
-            if data.get("url") == None:
-              data["url"] = ""
-            if data.get("note") == None:
-              data["note"] = ""
-              
-            data["url"] = data["url"].removeprefix("https://")
-            data["url"] = "https://" + data["url"]
+            if dataPasswords != None:
+              if data.get("name") == None:
+                data["name"] = ""
+              if data.get("username") == None:
+                data["username"] = ""
+              if data.get("password") == None:
+                data["password"] = ""
+              if data.get("url") == None:
+                data["url"] = ""
+              if data.get("note") == None:
+                data["note"] = ""
+                
+              data["url"] = data["url"].removeprefix("https://")
+              data["url"] = "https://" + data["url"]
 
-            dataPasswords["passwordIndex"] += 1
-            dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "note":data["note"], "id":dataPasswords["passwordIndex"]})
-              
-            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-              db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
-              return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              dataPasswords["passwordIndex"] += 1
+              dataPasswords["passwords"].append({"name":data["name"], "username":data["username"], "password":data["password"], "url":data["url"], "note":data["note"], "id":dataPasswords["passwordIndex"]})
+                
+              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", dataPasswords["passwordIndex"])
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
             return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
 
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
@@ -151,32 +155,34 @@ def vaultEdit(request):
           if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
 
-            if data.get("newName") == None:
-              data["newName"] = ""
-            if data.get("newUsername") == None:
-              data["newUsername"] = ""
-            if data.get("newPassword") == None:
-              data["newPassword"] = ""
-            if data.get("newUrl") == None:
-              data["newUrl"] = ""
-            if data.get("newNote") == None:
-              data["newNote"] = ""
-              
-            data["newUrl"] = data["newUrl"].removeprefix("https://")
-            data["newUrl"] = "https://" + data["newUrl"]
-
-            for entry in dataPasswords["passwords"]:
-              if entry["id"] == data["id"]:
-                entry["password"] = data["newPassword"]
-                entry["name"] = data["newName"]
-                entry["username"] = data["newUsername"]
-                entry["url"] = data["newUrl"]
-                entry["note"] = data["newNote"]
-                if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            if dataPasswords != None:
+              if data.get("newName") == None:
+                data["newName"] = ""
+              if data.get("newUsername") == None:
+                data["newUsername"] = ""
+              if data.get("newPassword") == None:
+                data["newPassword"] = ""
+              if data.get("newUrl") == None:
+                data["newUrl"] = ""
+              if data.get("newNote") == None:
+                data["newNote"] = ""
                 
-                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that ID"}))
+              data["newUrl"] = data["newUrl"].removeprefix("https://")
+              data["newUrl"] = "https://" + data["newUrl"]
+
+              for entry in dataPasswords["passwords"]:
+                if entry["id"] == data["id"]:
+                  entry["password"] = data["newPassword"]
+                  entry["name"] = data["newName"]
+                  entry["username"] = data["newUsername"]
+                  entry["url"] = data["newUrl"]
+                  entry["note"] = data["newNote"]
+                  if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                    return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+                  
+                  return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"No Entry exists with that ID"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
@@ -198,15 +204,18 @@ def vaultDelete(request):
         if account != None:
           if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
-            for entry in dataPasswords["passwords"]:
-              if entry["id"] == data["id"]:
-                dataPasswords["passwords"].remove(entry)
 
-                if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
-                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+            if dataPasswords != None:
+              for entry in dataPasswords["passwords"]:
+                if entry["id"] == data["id"]:
+                  dataPasswords["passwords"].remove(entry)
 
-                return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-            return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+                  if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", dataPasswords["passwords"]) != None:
+                    return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+
+                  return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"No Entry with that name"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
@@ -359,21 +368,24 @@ def vaultImport(request):
       data = json.loads(request.body)
       if functions.validateApiToken(data.get("apiToken")):
         account = db.find_one("users", {"email":data["email"]})
-        accountData = db.find_one("users-data", {"email":account["email"]})
 
         if account != None:
-          if functions.validateSession(account, data):
-            passwordIndex = accountData["passwordIndex"]
-            for entry in data["items"]:
-              entry["id"] = passwordIndex + 1
-              passwordIndex += 1
+          accountData = db.find_one("users-data", {"email":account["email"]})
+          
+          if accountData != None:
+            if functions.validateSession(account, data):
+              passwordIndex = accountData["passwordIndex"]
+              for entry in data["items"]:
+                entry["id"] = passwordIndex + 1
+                passwordIndex += 1
 
-            passwords = accountData["passwords"] + data["items"]
-            if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", passwords) != None:
-              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", passwordIndex) != None:
-                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
-            return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
-          return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+              passwords = accountData["passwords"] + data["items"]
+              if db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", passwords) != None:
+                if db.find_one_and_update("users-data", {"email":account["email"]}, "passwordIndex", passwordIndex) != None:
+                  return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
       
