@@ -18,5 +18,10 @@
   "salt_length":16,
   "max_sessions":10,
   "pp_width":150,
-  "pp_height":150
+  "pp_height":150,
+  "email_verification":true,
+  "email_host":"smtp.gmail.com",
+  "email_port":587,
+  "email_host_user":"",
+  "email_host_password":""
 }

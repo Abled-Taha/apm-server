@@ -40,3 +40,12 @@ class Config(object):
     self.max_sessions = int(os.getenv("max_sessions", "10"))
     self.pp_width = int(os.getenv("pp_width", "150"))
     self.pp_height = int(os.getenv("pp_height", "150"))
+    self.email_verification = os.getenv("email_verification", "False")
+    if self.email_verification == "True":
+      self.email_verification = True
+    else:
+      self.email_verification = False
+    self.email_host = os.getenv("email_host", "smtp.gmail.com")
+    self.email_port = int(os.getenv("email_port", "587"))
+    self.email_host_user = os.getenv("email_host_user", "")
+    self.email_host_password = os.getenv("email_host_password", "")

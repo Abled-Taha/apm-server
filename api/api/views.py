@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
 import json, swiftcrypt, base64
-from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj
+from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj, OtpHandlerObj
 from .Functions import Functions
 
 functions = Functions(db, ConfigObj)
@@ -55,6 +55,11 @@ def signup(request):
           dataAccount["salt"] = swiftcrypt.Salts().generate_salt(ConfigObj.salt_length)
           dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(data["password"], dataAccount["salt"], "sha256")
           dataAccount["sessionIds"] = []
+          dataAccount["otps"] = []
+          if ConfigObj.email_verification == True:
+            dataAccount["verified"] = False
+          else:
+            dataAccount["verified"] = True
           
           if db.insert_one("users", dataAccount) != None:
             dataPasswords = {"email":dataAccount["email"], "passwords":[], "passwordIndex":-1}
@@ -85,7 +90,7 @@ def vaultGet(request):
           if functions.validateSession(account, data):
             dataPasswords = db.find_one("users-data", {"email":account["email"]})
             if dataPasswords != None:
-              return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"]}))
+              return(JsonResponse({"errorCode":0, "errorMessage":"Success", "passwords":dataPasswords["passwords"], "verified":account["verified"]}))
             return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
           return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
         return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
@@ -392,6 +397,61 @@ def vaultImport(request):
     except Exception as e:
       print(e)
       return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+
+def otpSend(request):
+  if ConfigObj.email_verification == True:
+    if request.method != "POST":
+      return(HttpResponse("Method not Allowed."))
+    
+    else:
+      try:
+        data = json.loads(request.body)
+        if functions.validateApiToken(data.get("apiToken")):
+          account = db.find_one("users", {"email":data["email"]})
+
+          if account != None:
+            if functions.validateSession(account, data):
+              success = OtpHandlerObj.sendOtp(data["email"])
+              if success:
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
+        
+      except Exception as e:
+        print(e)
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+  else:
+    return(JsonResponse({"errorCode":1, "errorMessage":"Email Verification is Disabled"}))
+    
+def otpVerify(request):
+  if ConfigObj.email_verification == True:
+    if request.method != "POST":
+      return(HttpResponse("Method not Allowed."))
+    
+    else:
+      try:
+        data = json.loads(request.body)
+        if functions.validateApiToken(data.get("apiToken")):
+          account = db.find_one("users", {"email":data["email"]})
+
+          if account != None:
+            if functions.validateSession(account, data):
+              success = OtpHandlerObj.validateOtp(data["email"], data["otp"])
+              if success:
+                db.find_one_and_update("users", {"email":data["email"]}, "verified", True)
+                return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
+              return(JsonResponse({"errorCode":1, "errorMessage":"Invalid OTP"}))
+            return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
+          return(JsonResponse({"errorCode":1, "errorMessage":"No Account exists with that Email"}))
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Api Token"}))
+        
+      except Exception as e:
+        print(e)
+        return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Form"}))
+  else:
+    return(JsonResponse({"errorCode":1, "errorMessage":"Email Verification is Disabled"}))
 
 def home(request):
   return(render(request, "home/index.html", {'title':'APM - Home'}))

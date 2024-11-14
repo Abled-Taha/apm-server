@@ -3,6 +3,7 @@ from django.core.management.commands.runserver import Command as runserver
 from Config import Config as ConfigClass
 from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
 from ImageHandler import ImageHandler as ImageHandlerClass
+from OtpHandler import OtpHandler as OtpHandlerClass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Directory where 'manage.py' is located.
@@ -22,13 +23,17 @@ LogHandlerObj = LogHandlerClass(BASE_DIR)
 global ImageHandlerObj
 ImageHandlerObj = ImageHandlerClass(BASE_DIR, ConfigObj.pp_width, ConfigObj.pp_height)
 
-# Changing the server port
-runserver.default_addr = ConfigObj.server_host
-runserver.default_port = ConfigObj.server_port
-
 # Setting Up Database
 global db
 db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password, ConfigObj.db_srv)
+
+# Setting up OTP Handler
+global OtpHandlerObj
+OtpHandlerObj = OtpHandlerClass(ConfigObj, db)
+
+# Changing the server port
+runserver.default_addr = ConfigObj.server_host
+runserver.default_port = ConfigObj.server_port
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

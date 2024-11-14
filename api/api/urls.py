@@ -18,4 +18,6 @@ urlpatterns = [
     path('session-delete/', views.sessionDelete, name="Session Delete"),
     path('pp-get/', views.ppGet, name="PP Get"),
     path('pp-new/', views.ppNew, name="PP New"),
+    path('otp-send/', views.otpSend, name="OTP Send"),
+    path('otp-verify/', views.otpVerify, name="OTP Verify"),
 ]
