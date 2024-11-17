@@ -1,5 +1,5 @@
-import string, secrets, swiftcrypt
-from typing import List, Dict, Tuple, Any
+import string, secrets, swiftcrypt, datetime
+from typing import Dict, Tuple, Any
 
 class Functions(object):
   def __init__(self, db, ConfigObj):
@@ -93,3 +93,43 @@ class Functions(object):
     elif self.db.find_one("api-tokens", {"apiToken":token}) != None:
       return(True)
     return(False)
+  
+  def generateOtp(self):
+    """
+    Generates a new OTP (One Time Password) for a User.
+
+    Returns:
+    str: A new OTP for a User.
+    """
+
+    otp = ""
+    for i in range(6):
+      otp += secrets.choice(string.digits)
+    return(otp)
+  
+  def validateOtp(self, account: Dict[str, Any], email: str, otp: str) -> bool:
+    """
+    Validates the OTP (One Time Password) of a User.
+
+    Args:
+    account (Dict[str, Any]): The account of the User.
+    email (str): The Email of the User.
+    otp (str): The OTP to validate.
+
+    Returns:
+    bool: True if the OTP is valid, False otherwise.
+    """
+
+    try:
+      # Getting OTPs
+      otps = account["otps"]
+
+      # Checking if OTP is valid
+      for otpData in otps:
+        if otpData["otp"] == otp and datetime.datetime.strptime(otpData["expiry"], "%Y-%m-%d_%H:%M:%S") > datetime.datetime.now():
+          return True
+
+      return False
+    except Exception as e:
+      print(e)
+      return False

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse, JsonResponse
-import json, swiftcrypt, base64
-from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj, OtpHandlerObj
+import json, swiftcrypt, base64, datetime
+from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj, EmailHandlerObj
 from .Functions import Functions
 
 functions = Functions(db, ConfigObj)
@@ -411,8 +411,16 @@ def otpSend(request):
 
           if account != None:
             if functions.validateSession(account, data):
-              success = OtpHandlerObj.sendOtp(data["email"])
-              if success:
+              otp = functions.generateOtp()
+              otpData = {
+                "otp": otp,
+                "expiry": (datetime.datetime.now() + datetime.timedelta(minutes=10)).strftime("%Y-%m-%d_%H:%M:%S"),
+                "purpose": "Email Verification"
+              }
+              if EmailHandlerObj.send(data["email"], "APM - Email Verification", f"Your Verification Code is: {otp}"):
+                otps = account["otps"]
+                otps.append(otpData)
+                db.find_one_and_update("users", {"email": data["email"]}, "otps", otps)
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
               return(JsonResponse({"errorCode":1, "errorMessage":"Error in Database"}))
             return(JsonResponse({"errorCode":1, "errorMessage":"Invalid Session Id"}))
@@ -438,8 +446,7 @@ def otpVerify(request):
 
           if account != None:
             if functions.validateSession(account, data):
-              success = OtpHandlerObj.validateOtp(data["email"], data["otp"])
-              if success:
+              if functions.validateOtp(account, data["email"], data["otp"]):
                 db.find_one_and_update("users", {"email":data["email"]}, "verified", True)
                 return(JsonResponse({"errorCode":0, "errorMessage":"Success"}))
               return(JsonResponse({"errorCode":1, "errorMessage":"Invalid OTP"}))

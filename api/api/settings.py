@@ -3,7 +3,7 @@ from django.core.management.commands.runserver import Command as runserver
 from Config import Config as ConfigClass
 from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
 from ImageHandler import ImageHandler as ImageHandlerClass
-from OtpHandler import OtpHandler as OtpHandlerClass
+from EmailHandler import EmailHandler as EmailHandlerClass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Directory where 'manage.py' is located.
@@ -28,8 +28,8 @@ global db
 db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password, ConfigObj.db_srv)
 
 # Setting up OTP Handler
-global OtpHandlerObj
-OtpHandlerObj = OtpHandlerClass(ConfigObj, db)
+global EmailHandlerObj
+EmailHandlerObj = EmailHandlerClass(ConfigObj)
 
 # Changing the server port
 runserver.default_addr = ConfigObj.server_host
