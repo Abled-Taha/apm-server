@@ -1,4 +1,4 @@
-import os
+import os, base64
 from PIL import Image
 
 class ImageHandler(object):
@@ -7,14 +7,14 @@ class ImageHandler(object):
     self.pp_height = height
     self.BASE_DIR = BASE_DIR
 
-  def updatedImage(self, username, image):
+  def writeBytesObjToImage(self, username, imageBytesObj):
     path = f"{self.BASE_DIR}/users-data/{username}/pp.jpg"
     if os.path.exists(path):
       os.remove(path)
     if os.path.exists(f"{self.BASE_DIR}/users-data/{username}") == False:
       os.mkdir(f"{self.BASE_DIR}/users-data/{username}")
     with open(path, 'wb') as f:
-      f.write(image)
+      f.write(imageBytesObj)
     self.resizeImage(path)
     return True
 
@@ -28,3 +28,8 @@ class ImageHandler(object):
     img = Image.open(imagePath)
     img = img.resize((self.pp_width, self.pp_height), Image.Resampling.LANCZOS)
     img.save(imagePath)
+
+  def getImageBytes(self, imagePath):
+    with open(imagePath, "rb") as image_file:
+      imageBytesObj = base64.standard_b64encode(image_file.read())
+    return imageBytesObj

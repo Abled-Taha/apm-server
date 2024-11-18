@@ -8,11 +8,11 @@ class LogHandler(object):
     with open(f'{self.BASE_DIR}/logs.txt', 'r') as f:
       return f.read()
 
-  def write(self, text, data):
+  def write(self, endpoint, status, data={}, email="",text=""):
     if data.get("apiToken") == None or data.get("apiToken") == False:
       data["apiToken"] = ""
     
     with open(f'{self.BASE_DIR}/logs.txt', 'a') as f:
-      f.write(f"{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")} | {text} | {data["apiToken"]}")
+      f.write(f"{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")} | {endpoint} | {status} | {data["apiToken"]} | {email} | {text}")
       f.write('\n')
     return True

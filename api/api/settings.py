@@ -1,33 +1,38 @@
 from pathlib import Path
 from django.core.management.commands.runserver import Command as runserver
-from Config import Config as ConfigClass
-from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
-from ImageHandler import ImageHandler as ImageHandlerClass
-from EmailHandler import EmailHandler as EmailHandlerClass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Directory where 'manage.py' is located.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Getting Config
+# Setting Up Config
+from Config import Config as ConfigClass
 global ConfigObj
 ConfigObj = ConfigClass(BASE_DIR)
 ConfigObj.readConfig()
 
-# Setting up Log Handler
+# Setting Up Database
+from DatabaseHandler import DatabaseHandler as DatabaseHandlerClass
+global db
+db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password, ConfigObj.db_srv)
+
+# Setting Up Log Handler
 from LogHandler import LogHandler as LogHandlerClass
 global LogHandlerObj
 LogHandlerObj = LogHandlerClass(BASE_DIR)
 
-# Setting up Image Handler
+# Setting Up Functions
+from Functions import Functions as FunctionsClass
+global functions
+functions = FunctionsClass(db, ConfigObj, LogHandlerObj) 
+
+# Setting Up Image Handler
+from ImageHandler import ImageHandler as ImageHandlerClass
 global ImageHandlerObj
 ImageHandlerObj = ImageHandlerClass(BASE_DIR, ConfigObj.pp_width, ConfigObj.pp_height)
 
-# Setting Up Database
-global db
-db = DatabaseHandlerClass(ConfigObj.db_name, ConfigObj.db_host, ConfigObj.db_port, ConfigObj.db_username, ConfigObj.db_password, ConfigObj.db_srv)
-
-# Setting up OTP Handler
+# Setting Up Email Handler
+from EmailHandler import EmailHandler as EmailHandlerClass
 global EmailHandlerObj
 EmailHandlerObj = EmailHandlerClass(ConfigObj)
 
