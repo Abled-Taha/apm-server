@@ -20,4 +20,5 @@ urlpatterns = [
     path('pp-new/', views.ppNew, name="PP New"),
     path('otp-send/', views.otpSend, name="OTP Send"),
     path('otp-verify/', views.otpVerify, name="OTP Verify"),
+    path('change-password/', views.changePassword, name="Change Password"),
 ]

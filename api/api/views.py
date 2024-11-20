@@ -289,6 +289,32 @@ def otpVerify(request):
   else:
     return(JsonResponse({"errorCode":1, "errorMessage":"Email Verification is Disabled"}))
 
+def changePassword(request):
+  success, data, account, accountData, error = functions.runAllChecks(request, "Change-Password")
+  if success:
+    # Verify Master Password
+    if swiftcrypt.Checker().verify_password(data["oldPassword"], account["passwordHash"], account["salt"], "sha256"):
+      # Hash New Password
+      data["newPasswordHash"] = swiftcrypt.Hash().hash_password(data["newPassword"], account["salt"], "sha256")
+      # Update Password
+      db.find_one_and_update("users", {"email":account["email"]}, "passwordHash", data["newPasswordHash"])
+
+      # Update Vault Passwords
+      for newEntry in data["passwords"]:
+        for entry in accountData["passwords"]:
+          if entry["id"] == newEntry["id"]:
+            entry["password"] = newEntry["password"]
+            entry["note"] = newEntry["note"]
+            break
+      # Write to Database
+      db.find_one_and_update("users-data", {"email":account["email"]}, "passwords", accountData["passwords"])
+
+      return(JsonResponse(error))
+    return({"errorCode":1, "errorMessage":"Incorrect Password"}, account)
+
+  else:
+    return(JsonResponse(error))
+
 def home(request):
   return(render(request, "home/index.html", {'title':'APM - Home'}))
 
