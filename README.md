@@ -23,3 +23,4 @@ The Project [APM-SERVER](https://github.com/Abled-Taha/apm-server), [APM-APP](ht
 
 ### Todo
 1. Add ability to change user credentials
+2. Use the .env file for only some credentials.
