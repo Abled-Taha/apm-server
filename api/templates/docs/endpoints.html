@@ -6,6 +6,7 @@
         <th scope="col">#</th>
         <th scope="col">Endpoint</th>
         <th scope="col">Name</th>
+        <th scope="col">Method</th>
         <th scope="col">Description</th>
       </tr>
     </thead>
@@ -14,91 +15,113 @@
         <th scope="row">1</th>
         <td>/</td>
         <td>Index</td>
+        <td>GET / POST</td>
         <td>The Main Page. Shows up a congratulations Alert if the server is running.</td>
       </tr>
       <tr>
         <th scope="row">2</th>
         <td>/docs</td>
         <td>Docs</td>
+        <td>GET</td>
         <td>This Page. The entire Documentation & Guide of the API.</td>
       </tr>
       <tr>
         <th scope="row">3</th>
         <td>/signin</td>
         <td>Sign In</td>
-        <td>This endpoint only accepts POST requests. It validates the credentials in the form for account login and creates a new session ID token and logs in the user while returning the session ID token to the user in the form of JSON Response, otherwise returns a JSON Response with the appropriate error.</td>
+        <td>POST</td>
+        <td>It validates the credentials in the form for account login and creates a new session ID token and logs in the user while returning the session ID token to the user in the form of JSON Response, otherwise returns a JSON Response with the appropriate error.</td>
       </tr>
       <tr>
         <th scope="row">4</th>
         <td>/signup</td>
         <td>Sign Up</td>
-        <td>This endpoint only accepts POST requests. It validates the credentials in the form for account creation and creates an account, otherwise returns a JSON Response with the appropriate error.</td>
+        <td>POST</td>
+        <td>It validates the credentials in the form for account creation and creates an account, otherwise returns a JSON Response with the appropriate error.</td>
       </tr>
       <tr>
         <th scope="row">5</th>
         <td>/vault-get</td>
         <td>Vault Get</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and then gives the user's entire list of passwords in their account.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and then gives the user's entire list of passwords in their account.</td>
       </tr>
       <tr>
         <th scope="row">6</th>
         <td>/vault-new</td>
         <td>Vault New</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and creates a new entry of password in theirs password's list.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and creates a new entry of password in theirs password's list.</td>
       </tr>
       <tr>
         <th scope="row">7</th>
         <td>/vault-delete</td>
         <td>Vault Delete</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and deletes an entry of password in theirs password's list.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and deletes an entry of password in theirs password's list.</td>
       </tr>
       <tr>
         <th scope="row">8</th>
         <td>/vault-edit</td>
         <td>Vault Edit</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and edits an entry of password in theirs password's list.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and edits an entry of password in theirs password's list.</td>
       </tr>
       <tr>
         <th scope="row">9</th>
         <td>/session-get</td>
         <td>Session Get</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and then gives the user's entire list of active sessions in their account.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and then gives the user's entire list of active sessions in their account.</td>
       </tr>
       <tr>
         <th scope="row">10</th>
         <td>/session-delete</td>
         <td>Session Delete</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and deletes an entry of session in theirs sessions list.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and deletes an entry of session in theirs sessions list.</td>
       </tr>
       <tr>
         <th scope="row">11</th>
         <td>/session-edit</td>
         <td>Session Edit</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and edits an entry of session in their sessions list.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and edits an entry of session in their sessions list.</td>
       </tr>
       <tr>
         <th scope="row">12</th>
         <td>/pp-get</td>
         <td>Profile Picture Get</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and returns the PP.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and returns the PP.</td>
       </tr>
       <tr>
         <th scope="row">13</th>
         <td>/pp-new</td>
         <td>Profile Picture New</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and edits their pp.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and edits their pp.</td>
       </tr>
       <tr>
         <th scope="row">14</th>
         <td>/otp-send</td>
         <td>OTP Send</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and sends an otp on their provided email.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and sends an otp on their provided email.</td>
       </tr>
       <tr>
         <th scope="row">15</th>
         <td>/otp-verify</td>
         <td>OTP Verify</td>
-        <td>This endpoint only accepts POST requests. It validates the user's Email and Session ID and the sent OTP.</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and the sent OTP.</td>
+      </tr>
+      <tr>
+        <th scope="row">16</th>
+        <td>/change-password</td>
+        <td>Change Password</td>
+        <td>POST</td>
+        <td>It validates the user's Email and Session ID and the Master Password, after which, the user can change the Master Password</td>
       </tr>
     </tbody>
   </table>
