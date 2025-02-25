@@ -39,6 +39,33 @@ class Functions(object):
     sessionId = ''.join(secrets.choice(characters) for i in range(self.ConfigObj.sessionId_length))
     return(sessionId)
 
+  def validateAccountExistance(self, email: str) -> Dict[str, Any]:
+    """
+    Validates if an Account exists with the given Email.
+    """
+
+    if self.db.find_one("users", {"email":email}) == None:
+      return({"errorCode":0, "errorMessage":"Success"})
+    return({"errorCode":1, "errorMessage":"User already exists with this email"})
+
+  def validateUsernameLimitations(self, username: str) -> Dict[str, Any]:
+    """
+    Validates the Username of a User.
+    """
+
+    if len(username) >= self.ConfigObj.username_min_length and len(username) <= self.ConfigObj.username_max_length and username.isalnum():
+      return({"errorCode":0, "errorMessage":"Success"})
+    return({"errorCode":1, "errorMessage":f"The username must have more than {self.ConfigObj.username_min_length} and less than {self.ConfigObj.username_max_length} characters"})
+
+  def validatePasswordLimitations(self, password: str, rePassword: str) -> Dict[str, Any]:
+    """
+    Validates the Password of a User.
+    """
+
+    if password == rePassword and len(password) >= self.ConfigObj.password_min_length and len(password) <= self.ConfigObj.password_max_length:
+      return({"errorCode":0, "errorMessage":"Success"})
+    return({"errorCode":1, "errorMessage":f"The passwords must match and must have more than {self.ConfigObj.password_min_length} and less than {self.ConfigObj.password_max_length} characters"})
+
   def validateSignupData(self, email: str, username: str, password: str, rePassword: str) -> Dict[str, Any]:
     """
     Validates the Signup Data of a User.
@@ -53,13 +80,14 @@ class Functions(object):
     Tuple[bool, Dict[str, Any]]: A tuple containing a boolean indicating if the signup was valid, and a dictionary containing an errorCode and errorMessage.
     """
 
-    if self.db.find_one("users", {"email":email}) == None:
-      if len(username) >= self.ConfigObj.username_min_length and len(username) <= self.ConfigObj.username_max_length and username.isalnum():
-        if password == rePassword and len(password) >= self.ConfigObj.password_min_length and len(password) <= self.ConfigObj.password_max_length:
-          return({"errorCode":0, "errorMessage":"Success"})
-        return({"errorCode":1, "errorMessage":f"The passwords must match and must have more than {self.ConfigObj.password_min_length} and less than {self.ConfigObj.password_max_length} characters"})
-      return({"errorCode":1, "errorMessage":f"The username must have more than {self.ConfigObj.username_min_length} and less than {self.ConfigObj.username_max_length} characters"})
-    return({"errorCode":1, "errorMessage":"User already exists with this email"})
+    error = self.validateAccountExistance(email)
+    if error["errorCode"] == 0:
+      error = self.validateUsernameLimitations(username)
+      if error["errorCode"] == 0:
+        error = self.validatePasswordLimitations(password, rePassword)
+        if error["errorCode"] == 0:
+          pass
+    return error
 
 
   def validateSession(self, account: Dict[str, Any], data: Dict[str, Any]) -> bool:
@@ -137,6 +165,12 @@ class Functions(object):
       return False
       
   def runCommonChecks(self, request: HttpRequest, endpoint: str, writeLogOnSuccess = False) -> Tuple[bool, Dict[str, Any], Dict[str, Any]]:
+    """
+    Runs the common checks for a request. The checks are the following:
+    - Validate API Token
+    - Validate Form
+    - Validates Request Type to be POST
+    """
     if request.method != "POST":
       self.LogHandlerObj.write(endpoint, "FAILED", {}, "", "Method not Allowed")
       return False, {}, {"errorCode":1, "errorMessage":"Method not Allowed."}
@@ -147,12 +181,21 @@ class Functions(object):
           if writeLogOnSuccess:
             self.LogHandlerObj.write(endpoint, "OK", data, data["email"])
           return True, data, {"errorCode":0, "errorMessage":"Success"}
+        return False, data, {"erorCode":1, "errorMessage":"Invalid API Token"}
       except Exception as e:
         print(e)
         self.LogHandlerObj.write(endpoint, "FAILED", data, "", "Invalid Form")
       return False, {}, {"errorCode":1, "errorMessage":"Invalid Form"}
     
   def runAllChecks(self, request: HttpRequest, endpoint: str) -> Tuple[bool, Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """
+    Runs all checks for a request. The checks other than the common ones are the following:
+    - Validate API Token
+    - Validate Session ID
+
+    Args:
+    request (HttpRequest): The Django Request Object.
+    """
     success, data, error = self.runCommonChecks(request, endpoint)
     if success:
       if self.validateApiToken(data.get("apiToken")):

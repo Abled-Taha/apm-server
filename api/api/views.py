@@ -27,7 +27,7 @@ def signin(request):
         LogHandlerObj.write("Signin", "FAILED", data, data["email"], error["errorMessage"])
         return(JsonResponse(error))
       else:
-        LogHandlerObj.write("Signin", "FAILED", data, data["email"], error["errorMessage"])
+        LogHandlerObj.write("Signin", "FAILED", data, "N/A", error["errorMessage"])
         return(JsonResponse(error))
       
 def signup(request):
@@ -40,10 +40,13 @@ def signup(request):
         "email":data["email"],
         "username":data["username"],
         "salt":swiftcrypt.Salts().generate_salt(ConfigObj.salt_length),
+        "passwordHash":"",
+        "masterPasswordHistory":[],
         "sessionIds":[],
         "otps":[]
       }
       dataAccount["passwordHash"] = swiftcrypt.Hash().hash_password(data["password"], dataAccount["salt"], "sha256")
+      dataAccount["masterPasswordHistory"].append(dataAccount["passwordHash"])
       if ConfigObj.email_verification == True:
         dataAccount["verified"] = False
       else:
@@ -295,9 +298,12 @@ def changePassword(request):
     # Verify Master Password
     if swiftcrypt.Checker().verify_password(data["oldPassword"], account["passwordHash"], account["salt"], "sha256"):
       # Hash New Password
-      data["newPasswordHash"] = swiftcrypt.Hash().hash_password(data["newPassword"], account["salt"], "sha256")
+      account["passwordHash"] = swiftcrypt.Hash().hash_password(data["newPassword"], account["salt"], "sha256")
+      # Add New Password To Password History
+      account["masterPasswordHistory"].append(account["passwordHash"])
       # Update Password
-      db.find_one_and_update("users", {"email":account["email"]}, "passwordHash", data["newPasswordHash"])
+      db.find_one_and_update("users", {"email":account["email"]}, "passwordHash", account["passwordHash"])
+      db.find_one_and_update("users", {"email":account["email"]}, "masterPasswordHistory", account["masterPasswordHistory"])
 
       # Update Vault Passwords
       for newEntry in data["passwords"]:
