@@ -31,8 +31,11 @@ RUN python manage.py collectstatic --noinput
 # Run migrations
 RUN python manage.py migrate
 
+# Back in app directory
+WORKDIR /app
+
 # Expose port
 EXPOSE 80
 
 # Launch with Uvicorn
-CMD ["uvicorn", "api.api.asgi:application", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "main.py", "run-server"]
