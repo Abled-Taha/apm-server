@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: apm-server
+    ports:
+      - "8445:80"
+    environment:
+      - debug=${debug}
+      - secret_key=${secret_key}
+      - allowed_hosts=${allowed_hosts}
+      - db_name=${db_name}
+      - db_username=${db_username}
+      - db_host=${db_host}
+      - db_port=${db_port}
+      - db_password=${db_password}
+      - db_srv=${db_srv}
+      - server_host=${server_host}
+      - server_port=${server_port}
+      - username_min_length=${username_min_length}
+      - username_max_length=${username_max_length}
+      - password_min_length=${password_min_length}
+      - password_max_length=${password_max_length}
+      - sessionId_length=${sessionId_length}
+      - salt_length=${salt_length}
+      - max_sessions=${max_sessions}
+      - pp_width=${pp_width}
+      - pp_height=${pp_height}
+      - email_verification=${email_verification}
+      - email_host=${email_host}
+      - email_port=${email_port}
+      - email_host_user=${email_host_user}
+      - email_host_password=${email_host_password}
+    restart: always
