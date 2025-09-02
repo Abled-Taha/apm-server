@@ -32,4 +32,4 @@ services:
       - email_port=${email_port}
       - email_host_user=${email_host_user}
       - email_host_password=${email_host_password}
-    restart: always
+    restart: unless-stopped
