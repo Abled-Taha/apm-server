@@ -5,7 +5,7 @@ services:
     build: .
     container_name: apm-server
     ports:
-      - "8445:80"
+      - "8447:80"
     environment:
       - debug=${debug}
       - secret_key=${secret_key}
