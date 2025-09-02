@@ -13,6 +13,6 @@ class LogHandler(object):
       data["apiToken"] = ""
     
     with open(f'{self.BASE_DIR}/logs.txt', 'a') as f:
-      f.write(f"{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")} | {endpoint} | {status} | {data["apiToken"]} | {email} | {text}")
+      f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')} | {endpoint} | {status} | {data['apiToken']} | {email} | {text}")
       f.write('\n')
     return True
