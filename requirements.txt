@@ -39,3 +39,4 @@ urllib3==2.2.1
 uvicorn==0.35.0
 waitress==3.0.0
 wheel==0.41.2
+whitenoise==6.9.0
