@@ -217,6 +217,12 @@ class Functions(object):
     else:
       return success, data, {}, {}, error
     
-  def dPrint(self, message: str):
+  def dPrint(self, message: str) -> None:
+    """
+    Prints on terminal but only if debug is set to true.
+
+    Args:
+    message (str): String.
+    """
     if self.ConfigObj["debug"]:
       print(f"[DEBUG]: {message}")
