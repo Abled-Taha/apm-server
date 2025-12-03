@@ -29,7 +29,10 @@ def run_server():
     setupConfig()
     
     os.chdir("./api")
-    subprocess.call(["waitress-serve", f"--listen={ConfigObj.server_host}:{ConfigObj.server_port}", "api.wsgi:application"])
+    try:
+      subprocess.call(["waitress-serve", f"--listen={ConfigObj.server_host}:{ConfigObj.server_port}", "api.wsgi:application"])
+    except:
+      print("Stopped.")
 
 def generate_api_token():
     import string, secrets
@@ -65,10 +68,8 @@ if __name__ == "__main__":
         run_server()
       elif sys.argv[1] == "generate-api-token":
         generate_api_token()
-      elif sys.argv[1] == "help":
-        help()
       else:
-          print("Invalid arguments")
+        help()
     except Exception as e:
       print(e)
       print("Provide a valid argument")
