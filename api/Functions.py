@@ -216,3 +216,7 @@ class Functions(object):
       return False, data, {}, {}, {"errorCode":1, "errorMessage":"Invalid Api Token"}
     else:
       return success, data, {}, {}, error
+    
+  def dPrint(self, message: str):
+    if self.ConfigObj["debug"]:
+      print(f"[DEBUG]: {message}")
