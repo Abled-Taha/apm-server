@@ -1,0 +1,5 @@
+Changed the Config Loading Class so that it uses config.json for some options and .env for some secrets,
+rather than relying on one file for everything. Yet the code is not tested and not even ran once,
+as I am facing a problem of having installed a Python version newer than some of the libraries used in this project support.
+Maybe I should try switching my Python version to 3.10?
+And if that works I can set the Python version in the requirements.txt too for future references.
