@@ -181,7 +181,7 @@ class Functions(object):
           if writeLogOnSuccess:
             self.LogHandlerObj.write(endpoint, "OK", data, data["email"])
           return True, data, {"errorCode":0, "errorMessage":"Success"}
-        return False, data, {"erorCode":1, "errorMessage":"Invalid API Token"}
+        return False, data, {"errorCode":1, "errorMessage":"Invalid API Token"}
       except Exception as e:
         print(e)
         self.LogHandlerObj.write(endpoint, "FAILED", data, "", "Invalid Form")
