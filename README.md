@@ -28,4 +28,3 @@ The Project [APM-SERVER](https://github.com/Abled-Taha/apm-server), [APM-APP](ht
 The same documentaion can be found on the **/docs** endpoint of the API.
 
 # Todo
-1. Add ability to change user credentials.
