@@ -29,6 +29,7 @@ class Config(object):
     self.email_host_user = os.getenv("email_host_user", "")
     self.email_host_password = os.getenv("email_host_password", "")
 
+    self.docs_enabled = self.config["docs_enabled"]
     self.debug = self.config["debug"]
     self.allowed_hosts = self.config["allowed_hosts"]
     self.db_srv = self.config["db_srv"]

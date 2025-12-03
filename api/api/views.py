@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 import swiftcrypt, base64, datetime
 from .settings import db, ConfigObj, ImageHandlerObj, LogHandlerObj, EmailHandlerObj, functions
 
@@ -325,4 +325,7 @@ def home(request):
   return(render(request, "home/index.html", {'title':'APM - Home'}))
 
 def docs(request):
-  return(render(request, "docs/index.html", {'title':'APM - Docs'}))
+  if ConfigObj.docs_enabled:
+    return(render(request, "docs/index.html", {'title':'APM - Docs'}))
+  else:
+    return(HttpResponse("DOCS DISABLED."))
